@@ -7,8 +7,24 @@
 import SwiftUI
 
 struct AddHabitView: View {
+    @Environment(\.dismiss) var dismiss
+
     var body: some View {
-        Text("Add Habit View page placeholder")
-            .padding()
+        VStack {
+            HStack {
+                Text("Add a new habit")
+                    .font(.title2).bold()
+                    Spacer()
+                    Button(action: {
+                    dismiss()
+                    }) {
+                        Image(systemName: "xmark")
+                            .font(.headline)
+                            .foregroundColor(.black)
+                }
+            }
+            Spacer()
+        }
+        .padding()
     }
 }

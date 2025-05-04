@@ -7,7 +7,18 @@
 import SwiftUI
 
 struct DashboardView: View {
+    @State private var showAddHabit = false
+
     var body: some View {
-        Text("Dashboard View placeholder")
+        VStack {
+            Text("Dashboard goes here")
+
+            Button("Add Habit") {
+                showAddHabit = true
+            }
+        }
+        .sheet(isPresented: $showAddHabit) {
+            AddHabitView()
+        }
     }
 }
