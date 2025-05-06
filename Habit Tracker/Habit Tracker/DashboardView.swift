@@ -7,6 +7,7 @@
 import SwiftUI
 
 struct DashboardView: View {
+    @ObservedObject var viewModel: HabitViewModel
     @State private var showAddHabit = false
 
     var body: some View {
@@ -18,7 +19,7 @@ struct DashboardView: View {
             }
         }
         .sheet(isPresented: $showAddHabit) {
-            AddHabitView()
+            AddHabitView(viewModel: viewModel)
         }
     }
 }

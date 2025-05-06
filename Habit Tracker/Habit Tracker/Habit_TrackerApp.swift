@@ -12,7 +12,7 @@ struct Habit_TrackerApp: App {
     var body: some Scene {
         WindowGroup {
             //SplashView() //should actually start with splashview
-            DashboardView() //starting with dashboard view to test
+            DashboardView(viewModel: HabitViewModel()) //starting with dashboard view to test
         }
     }
 }
