@@ -10,6 +10,8 @@ struct AddHabitView: View {
     @Environment(\.dismiss) var dismiss
     @State private var habitName: String = ""
     @State private var difficulty: String = "Medium"
+    @State private var notificationEnabled = true
+    @State private var startDate: Date = Date()
     let difficultyOptions = ["Easy", "Medium", "Hard"]
     
     @State private var selectedDays: [String] = []
@@ -80,7 +82,6 @@ struct AddHabitView: View {
                             Text("Difficulty")
                                 .font(.headline)
                                 .foregroundColor(Theme.textPrimary)
-                            
                             HStack(spacing: 12) {
                                 ForEach(difficultyOptions, id: \.self) { option in
                                     Button(action: {
@@ -100,7 +101,7 @@ struct AddHabitView: View {
                                                 .frame(maxWidth: .infinity)
                                         }
                                         .padding()
-                                        .frame(width: 90)
+                                        .frame(width: 100)
                                         .background(difficulty == option ? Theme.accent : Theme.muted)
                                         .cornerRadius(12)
                                         .foregroundColor(Theme.textPrimary)
@@ -114,18 +115,32 @@ struct AddHabitView: View {
                     // Notification
                     CardView {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Notify me")
+                            Toggle("Notify me", isOn: $notificationEnabled)
                                 .font(.headline)
                                 .foregroundColor(Theme.textPrimary)
+                                .toggleStyle(SwitchToggleStyle(tint: Theme.textPrimary))
+                            
+                            // TODO: Insert notification time picker and logic here
+                            //if notificationEnabled {
+                            //    show date/time picker
+                            //}
                         }
                     }
 
                     // Start Date
                     CardView {
-                        VStack(alignment: .leading, spacing: 8) {
+                        HStack {
                             Text("Start Date")
                                 .font(.headline)
                                 .foregroundColor(Theme.textPrimary)
+                            Spacer()
+                            DatePicker(
+                                "",
+                                selection: $startDate,
+                                displayedComponents: .date
+                            )
+                            .labelsHidden()
+                            .datePickerStyle(.compact)
                         }
                     }
                     
