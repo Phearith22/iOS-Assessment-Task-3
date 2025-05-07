@@ -8,8 +8,18 @@ import SwiftUI
 
 struct ProgressView: View {
     @ObservedObject var viewModel: HabitViewModel
-    var body: some View {
-        Text("Progress View page placeholder")
-            .padding()
-    }
-}
+    @State private var completedHabitsToday: [UUID] = []
+
+        var body: some View {
+            NavigationView {
+                ScrollView {
+                    VStack(spacing: 20) {
+                     
+                    }
+                    .padding()
+                }
+                .navigationTitle("Your Progress")
+            }
+            .background(Theme.background)
+        }
+ }
