@@ -9,17 +9,38 @@ import SwiftUI
 struct DashboardView: View {
     @ObservedObject var viewModel: HabitViewModel
     @State private var showAddHabit = false
-
+    @State private var selectedTab = 0
+    
     var body: some View {
-        VStack {
-            Text("Dashboard goes here")
+        TabView(selection: $selectedTab) {
+                    VStack {
+                        Text("Dashboard")
+                        Button("Add Habit") {
+                            showAddHabit = true
+                        }
+                    }
+                    .tabItem {
+                        Label("Dashboard", systemImage: "house")
+                    }
+                    .tag(0)
 
-            Button("Add Habit") {
-                showAddHabit = true
-            }
-        }
+                    ProgressView(viewModel: viewModel)
+                        .tabItem {
+                            Label("Progress", systemImage: "chart.bar")
+                        }
+                        .tag(1)
+
+                    ProfileView()
+                        .tabItem {
+                            Label("Profile", systemImage: "person")
+                        }
+                        .tag(2)
+                }
         .sheet(isPresented: $showAddHabit) {
             AddHabitView(viewModel: viewModel)
+            
         }
+           
     }
 }
+

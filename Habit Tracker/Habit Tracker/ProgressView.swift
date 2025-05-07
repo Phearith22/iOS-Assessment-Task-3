@@ -7,6 +7,7 @@
 import SwiftUI
 
 struct ProgressView: View {
+    @ObservedObject var viewModel: HabitViewModel
     var body: some View {
         Text("Progress View page placeholder")
             .padding()
