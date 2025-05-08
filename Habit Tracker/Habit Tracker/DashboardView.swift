@@ -21,7 +21,11 @@ struct DashboardView: View {
                 }
                 .tag(0)
             
-                  
+            ProgressView()
+                            .tabItem {
+                                Label("Progress", systemImage: "calendar")
+                            }
+                            .tag(1)
 
                    
             
