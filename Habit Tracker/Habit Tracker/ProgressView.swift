@@ -70,6 +70,12 @@ struct ProgressView: View {
                                 }
                             }
                         }
+                        
+                        if viewModel.habits.isEmpty {
+                            Text("No habits yet. Add some to track progress.")
+                                .foregroundColor(.gray)
+                                .padding()
+                        }
                      
                     }
                     .padding()
