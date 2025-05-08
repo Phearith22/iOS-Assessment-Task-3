@@ -13,20 +13,24 @@ struct DashboardView: View {
     
     var body: some View {
         TabView(selection: $selectedTab) {
+            
+            ProgressView(viewModel: viewModel)
+                .tabItem {
+                    Label("Dashboard", systemImage: "house")
+                }
+                .tag(0)
+            
                     VStack {
-                        Text("Dashboard")
+                        Text("Progress")
                      
                     }
                     .tabItem {
-                        Label("Dashboard", systemImage: "house")
+                        Label("Progress", systemImage: "chart.bar")
+                        
                     }
-                    .tag(0)
+                    .tag(1)
 
-                    ProgressView(viewModel: viewModel)
-                        .tabItem {
-                            Label("Progress", systemImage: "chart.bar")
-                        }
-                        .tag(1)
+                   
             
             Color.clear
                            .tabItem {
