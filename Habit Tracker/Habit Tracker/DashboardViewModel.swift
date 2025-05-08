@@ -8,10 +8,6 @@
 import SwiftUI
 
 struct DashboardViewModel: View {
-    
-    
-    
-    
         @ObservedObject var viewModel: HabitViewModel
         @State private var completedHabitsToday: [UUID] = []
 
