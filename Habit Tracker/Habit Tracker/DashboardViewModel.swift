@@ -81,7 +81,7 @@ struct DashboardViewModel: View {
                         }
                         .padding()
                     }
-                    .navigationTitle("Your Progress")
+                    .navigationTitle("Welcome to Quokka!")
                 }
                 .background(Theme.background)
             }
