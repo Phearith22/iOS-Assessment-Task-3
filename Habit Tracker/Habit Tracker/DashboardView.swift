@@ -14,7 +14,8 @@ struct DashboardView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             
-            ProgressView(viewModel: viewModel)
+            
+            DashboardViewModel(viewModel: viewModel)
                 .tabItem {
                     Label("Dashboard", systemImage: "house")
                 }
