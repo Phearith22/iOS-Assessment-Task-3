@@ -15,9 +15,7 @@ struct DashboardView: View {
         TabView(selection: $selectedTab) {
                     VStack {
                         Text("Dashboard")
-                        Button("Add Habit") {
-                            showAddHabit = true
-                        }
+                     
                     }
                     .tabItem {
                         Label("Dashboard", systemImage: "house")
@@ -29,6 +27,18 @@ struct DashboardView: View {
                             Label("Progress", systemImage: "chart.bar")
                         }
                         .tag(1)
+            
+            Color.clear
+                           .tabItem {
+                               Image(systemName: "plus.circle")
+                               Text("Add")
+                           }
+                           .onAppear {
+                              
+                               showAddHabit = true
+                               selectedTab = 0
+                           }
+                           .tag(3)
 
                     ProfileView()
                         .tabItem {
