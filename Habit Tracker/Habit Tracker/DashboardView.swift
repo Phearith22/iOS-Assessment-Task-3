@@ -21,15 +21,7 @@ struct DashboardView: View {
                 }
                 .tag(0)
             
-                    VStack {
-                        Text("Progress")
-                     
-                    }
-                    .tabItem {
-                        Label("Progress", systemImage: "chart.bar")
-                        
-                    }
-                    .tag(1)
+                  
 
                    
             
