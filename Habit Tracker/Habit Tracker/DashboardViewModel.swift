@@ -98,19 +98,38 @@ struct DashboardViewModel: View {
                                         .font(.caption)
                                         .foregroundColor(.gray)
                                     
-                                    Toggle(isOn: Binding<Bool>(
-                                        get: { completedHabitsToday.contains(habit.id) },
-                                        set: { newValue in
-                                            if newValue {
-                                                completedHabitsToday.append(habit.id)
-                                            } else {
-                                                completedHabitsToday.removeAll { $0 == habit.id }
-                                            }
+//                                    Toggle(isOn: Binding<Bool>(
+//                                        get: { completedHabitsToday.contains(habit.id) },
+//                                        set: { newValue in
+//                                            if newValue {
+//                                                completedHabitsToday.append(habit.id)
+//                                            } else {
+//                                                completedHabitsToday.removeAll { $0 == habit.id }
+//                                            }
+//                                        }
+//                                    )) {
+//                                        Text("Mark as completed today")
+//                                    }
+//                                    .toggleStyle(SwitchToggleStyle(tint: .green))
+//                                }
+//                            }
+//                        }
+                                    
+                                    Button(action: {
+                                        if completedHabitsToday.contains(habit.id) {
+                                            completedHabitsToday.removeAll { $0 == habit.id }
+                                        } else {
+                                            completedHabitsToday.append(habit.id)
                                         }
-                                    )) {
-                                        Text("Mark as completed today")
+                                    }) {
+                                        HStack {
+                                            Image(systemName: completedHabitsToday.contains(habit.id) ? "checkmark.square" : "square")
+                                                .foregroundColor(.black)
+                                            Text("Mark as completed today")
+                                                .foregroundColor(.primary)
+                                        }
                                     }
-                                    .toggleStyle(SwitchToggleStyle(tint: .green))
+                                    .padding(.top, 4)
                                 }
                             }
                         }
