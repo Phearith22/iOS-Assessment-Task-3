@@ -98,22 +98,6 @@ struct DashboardViewModel: View {
                                         .font(.caption)
                                         .foregroundColor(.gray)
                                     
-//                                    Toggle(isOn: Binding<Bool>(
-//                                        get: { completedHabitsToday.contains(habit.id) },
-//                                        set: { newValue in
-//                                            if newValue {
-//                                                completedHabitsToday.append(habit.id)
-//                                            } else {
-//                                                completedHabitsToday.removeAll { $0 == habit.id }
-//                                            }
-//                                        }
-//                                    )) {
-//                                        Text("Mark as completed today")
-//                                    }
-//                                    .toggleStyle(SwitchToggleStyle(tint: .green))
-//                                }
-//                            }
-//                        }
                                     
                                     Button(action: {
                                         if completedHabitsToday.contains(habit.id) {
