@@ -48,7 +48,12 @@ struct DashboardViewModel: View {
                         )
                                                    
                         .shadow(color: .gray.opacity(0.1), radius: 4, x: 0, y: 2)
-                                                    
+                        
+                        Image(systemName: "trophy")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 50, height: 50)
+                            .padding()
                         
                         if !viewModel.habits.isEmpty {
                             VStack(alignment: .leading, spacing: 10) {
