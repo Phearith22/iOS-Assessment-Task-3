@@ -52,10 +52,16 @@ struct DashboardViewModel: View {
                         
                         if !viewModel.habits.isEmpty {
                             VStack(alignment: .leading, spacing: 10) {
+                                HStack {
                                 // Progress bar
                                 SwiftUI.ProgressView(value: progress)
-                                    .accentColor(.green)
+                                    .accentColor(.black)
                                     .frame(height: 8)
+                                
+                                Text("\(earnedPoints)/\(totalPoints)")
+                                                .font(.subheadline)
+                                                .foregroundColor(.gray)
+                                        }
                                 
                                 // Total points
                                 Text("Total Points Earned Today: \(earnedPoints)")
@@ -154,6 +160,11 @@ struct DashboardViewModel: View {
                 .filter { completedHabitsToday.contains($0.id) }
                 .reduce(0) { $0 + points(for: $1.difficulty) }
         }
+    
+    var totalPoints: Int {
+        viewModel.habits.reduce(0) { $0 + points(for: $1.difficulty) }
+    }
+
         
      
 
