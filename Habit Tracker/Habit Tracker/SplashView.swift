@@ -10,11 +10,10 @@ struct SplashView: View {
     @State private var isLoggedIn = false
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(spacing: 20) {
                 Spacer()
 
-                // Quokka Image with Ellipse
                 ZStack {
                     Ellipse()
                         .fill(Theme.accent)
@@ -26,8 +25,6 @@ struct SplashView: View {
                         .scaledToFit()
                         .frame(width: 320, height: 360)
                 }
-                
-                // Title
                 Text("QuokkaQuest")
                     .font(.system(size: 24, weight: .bold))
                     .foregroundColor(Theme.textPrimary)
@@ -38,7 +35,7 @@ struct SplashView: View {
                     HStack(spacing: 8) {
                         Image(systemName: "globe")
                         Text("Continue with Google")
-                        .fontWeight(.medium)
+                            .fontWeight(.medium)
                     }
                     .frame(maxWidth: 230)
                     .padding()
@@ -47,33 +44,30 @@ struct SplashView: View {
                     .foregroundColor(Theme.textPrimary)
                 }
 
-                //OR
-                Text ("OR")
+                Text("OR")
                     .font(.footnote)
                     .foregroundColor(Theme.textSecondary)
 
-                // Email Signup Button
                 Button {
                     isLoggedIn = true
                 } label: {
                     Text("Sign up with Email")
-                    .fontWeight(.medium)
-                    .frame(maxWidth: 230)
-                    .padding()
-                    .background(Theme.card)
-                    .cornerRadius(12)
-                    .overlay(
-                        RoundedRectangle(cornerRadius:15)
-                        .stroke(Theme.muted, lineWidth:1)
-                    )
-                    .foregroundColor(Theme.textSecondary)
+                        .fontWeight(.medium)
+                        .frame(maxWidth: 230)
+                        .padding()
+                        .background(Theme.card)
+                        .cornerRadius(12)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 15)
+                                .stroke(Theme.muted, lineWidth: 1)
+                        )
+                        .foregroundColor(Theme.textSecondary)
                 }
-                
-                // Footer Log In
+
                 VStack(spacing: 4) {
                     Text("Already have an account?")
-                    .font(.footnote)
-                    .foregroundColor(Theme.textSecondary)
+                        .font(.footnote)
+                        .foregroundColor(Theme.textSecondary)
                     Button("Log in") {
                         isLoggedIn = true
                     }
@@ -83,17 +77,13 @@ struct SplashView: View {
 
                 Spacer()
             }
-                
             .padding(.horizontal, 28)
             .padding(.top, 30)
             .background(Theme.background)
             .ignoresSafeArea()
-            //Navigation destination
-                .navigationDestination (isPresented: &isLoggedIn) {
-                    DashboardView()
-                }
+            .navigationDestination(isPresented: $isLoggedIn) {
+                DashboardView(viewModel: HabitViewModel())
             }
-            .ignoresSafeArea()
         }
     }
-
+}
