@@ -15,7 +15,6 @@ class YourProgressViewModel : ObservableObject{
     @Published var currentDate = Date()
     @Published var daysInMonth: [Date] = []
     @Published var completedDays: Set<String> = []
-    
     //stats
     @Published var currentStreak: Int = 5
     @Published var longestStreak: Int = 10
@@ -93,6 +92,18 @@ class YourProgressViewModel : ObservableObject{
         loadCompletedDays()
         calculateStats()
     }
+    
+    func isDateToday(_ date: Date) -> Bool {
+            return Calendar.current.isDate(date, inSameDayAs: Date())
+        }
+        
+        func dateString(from date: Date) -> String {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd"
+            return formatter.string(from: date)
+        }
+    
+        
     
     
     

@@ -1,10 +1,9 @@
 //
 //  ProgressView.swift
-//  Habit Tracker
 //
-//  Created by Pichsophearith lay on 9/5/2025.
 //
-
+//  Created by Paridhi Agarwal on 4/5/2025.
+//
 import SwiftUI
 
 struct ProgressView: View {
@@ -38,4 +37,5 @@ struct ProgressView: View {
                 }
             }
         }
+    }
 }
