@@ -18,6 +18,33 @@ struct DashboardViewModel: View {
                     .edgesIgnoringSafeArea(.all)
                 ScrollView {
                     VStack(spacing: 20) {
+                        HStack(spacing: 10) {
+                            ForEach(0..<7) { index in
+                                let date = Calendar.current.date(byAdding: .day, value: index, to: startOfWeek)!
+                                let weekdaySymbol = weekdaySymbols[index]
+                                let dayNumber = Calendar.current.component(.day, from: date)
+                                let isToday = Calendar.current.isDateInToday(date)
+
+                                VStack {
+                                    Text(weekdaySymbol)
+                                        .font(.caption)
+                                        .foregroundColor(.gray)
+                                    Text("\(dayNumber)")
+                                        .fontWeight(isToday ? .bold : .regular)
+                                        .foregroundColor(isToday ? .white : .black)
+                                        .frame(width: 28, height: 28)
+                                        .background(isToday ? Color.black : Color.clear)
+                                        .clipShape(Circle())
+                                }
+                                .frame(maxWidth: .infinity)
+                            }
+                        }
+                        .padding()
+                        .background(Theme.card)
+                        .cornerRadius(12)
+                        .shadow(color: .gray.opacity(0.1), radius: 4, x: 0, y: 2)
+                                                    
+                        
                         if !viewModel.habits.isEmpty {
                             VStack(alignment: .leading, spacing: 10) {
                                 // Progress bar
@@ -31,6 +58,7 @@ struct DashboardViewModel: View {
                             }
                             .padding(.horizontal)
                         }
+                        
                         
                         ForEach(viewModel.habits.filter { !completedHabitsToday.contains($0.id) }) { habit in
                             CardView {
@@ -90,6 +118,16 @@ struct DashboardViewModel: View {
         }
         
     }
+    
+    private var startOfWeek: Date {
+            Calendar.current.date(from: Calendar.current.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date()))!
+        }
+
+        private var weekdaySymbols: [String] {
+            let symbols = Calendar.current.shortWeekdaySymbols
+            let firstWeekday = Calendar.current.firstWeekday - 1
+            return Array(symbols[firstWeekday...] + symbols[..<firstWeekday])
+        }
         
         func points(for difficulty: String) -> Int {
             switch difficulty {
