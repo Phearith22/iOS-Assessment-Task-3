@@ -42,6 +42,11 @@ struct DashboardViewModel: View {
                         .padding()
                         .background(Theme.card)
                         .cornerRadius(12)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.black, lineWidth: 2)
+                        )
+                                                   
                         .shadow(color: .gray.opacity(0.1), radius: 4, x: 0, y: 2)
                                                     
                         
