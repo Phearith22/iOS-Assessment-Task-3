@@ -10,6 +10,23 @@ import SwiftUI
 struct DashboardViewModel: View {
         @ObservedObject var viewModel: HabitViewModel
         @State private var completedHabitsToday: [UUID] = []
+        @State private var earnedPoints: Int = 0
+    
+    // Save the completed habits and earned points to UserDefaults
+        private func saveData() {
+            let completedHabitsData = completedHabitsToday.map { $0.uuidString }
+            UserDefaults.standard.set(completedHabitsData, forKey: "completedHabitsToday")
+            UserDefaults.standard.set(earnedPoints, forKey: "earnedPoints")
+        }
+
+        // Load the saved habits and points from UserDefaults
+        private func loadData() {
+            if let savedCompletedHabits = UserDefaults.standard.array(forKey: "completedHabitsToday") as? [String] {
+                completedHabitsToday = savedCompletedHabits.compactMap { UUID(uuidString: $0) }
+            }
+            earnedPoints = UserDefaults.standard.integer(forKey: "earnedPoints")
+        }
+
 
     var body: some View {
         NavigationView {
@@ -110,6 +127,8 @@ struct DashboardViewModel: View {
                                         } else {
                                             completedHabitsToday.append(habit.id)
                                         }
+                                        earnedPoints = calculateEarnedPoints()
+                                        saveData()
                                     }) {
                                         HStack {
                                             Image(systemName: completedHabitsToday.contains(habit.id) ? "checkmark.square" : "square")
@@ -135,6 +154,9 @@ struct DashboardViewModel: View {
                 .navigationTitle("Welcome to Quokka!")
             }
             .background(Theme.background)
+        }
+        .onAppear {
+            loadData()
         }
         
     }
@@ -164,21 +186,18 @@ struct DashboardViewModel: View {
             return Double(completedHabitsToday.count) / total
         }
 
-        var earnedPoints: Int {
-            viewModel.habits
-                .filter { completedHabitsToday.contains($0.id) }
-                .reduce(0) { $0 + points(for: $1.difficulty) }
-        }
+       
     
     var totalPoints: Int {
         viewModel.habits.reduce(0) { $0 + points(for: $1.difficulty) }
     }
-
-        
-     
+    // Calculate the earned points dynamically
+        func calculateEarnedPoints() -> Int {
+            return viewModel.habits
+                .filter { completedHabitsToday.contains($0.id) }
+                .reduce(0) { $0 + points(for: $1.difficulty) }
+        }
 
 
 }
-
-
 
