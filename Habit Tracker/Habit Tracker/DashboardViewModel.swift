@@ -52,6 +52,9 @@ struct DashboardViewModel: View {
                         
                         if !viewModel.habits.isEmpty {
                             VStack(alignment: .leading, spacing: 10) {
+                                // Total points
+                                Text("Daily Quokkies: \(earnedPoints) ★")
+                                    .font(.headline)
                                 HStack {
                                 // Progress bar
                                 SwiftUI.ProgressView(value: progress)
@@ -63,9 +66,7 @@ struct DashboardViewModel: View {
                                                 .foregroundColor(.gray)
                                         }
                                 
-                                // Total points
-                                Text("Total Points Earned Today: \(earnedPoints)")
-                                    .font(.headline)
+                               
                             }
                             .padding(.horizontal)
                         }
