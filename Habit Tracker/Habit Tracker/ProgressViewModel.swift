@@ -1,5 +1,3 @@
-
-
 //  ProgressViewModel.swift
 //  Habit Tracker
 //
@@ -14,14 +12,16 @@ class ProgressViewModel : ObservableObject{
     @Published var selectedYear: Int
     @Published var currentDate = Date()
     @Published var daysInMonth: [Date] = []
-    @Published var completedDays: Set<String> = []
+    @Published var completedDays: Set<String> = [] // tracks completed dates
+    @Published var habitCompletions: [String: Set<UUID>] = [:] // Tracks habits completed on each date
+
     //stats
     @Published var currentStreak: Int = 0
     @Published var longestStreak: Int = 0
     @Published var completionRate: Double = 0.0
     @Published var monthlyPoints: Int = 0
     
-    private var HabitViewModel : HabitViewModel
+    private var habitViewModel: HabitViewModel
     private var cancellables = Set<AnyCancellable>()
     
     init(habitViewModel: HabitViewModel){
@@ -30,21 +30,21 @@ class ProgressViewModel : ObservableObject{
         
         self.selectedMonth = components.month ?? 1
         self.selectedYear = components.year ?? 2025
-        self.HabitViewModel = habitViewModel
+        self.habitViewModel = habitViewModel
         //Load Initial data
-        self.generateDaysForSelectedMonth()
-        self.loadCompletedDays()
+        loadCompletedDays()
+        loadHabitCompletions()
+        
         habitViewModel.$habits
-        
             .sink { [weak self] habits in
+                self?.generateDaysForSelectedMonth()
                 self?.calculateStats()
-                
             }
-        
             .store(in: &cancellables)
         
         //calculate intial stats
-        self.calculateStats()
+        generateDaysForSelectedMonth()
+        calculateStats()
     }
     
     func generateDaysForSelectedMonth() {
@@ -127,6 +127,7 @@ class ProgressViewModel : ObservableObject{
         formatter.dateFormat = "yyyy-MM-dd"
         return formatter.string(from: date)
     }
+    
     func monthYearString() -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "MMMM yyyy"
@@ -141,6 +142,69 @@ class ProgressViewModel : ObservableObject{
         
         return "Unknown"
     }
+    
+    // Get habits scheduled for a specific date
+    func habitsForDate(_ date: Date) -> [Habit] {
+        let dayName = getDayOfWeek(from: date)
+        return habitViewModel.habits.filter { habit in
+            habit.frequency.contains(dayName)
+        }
+    }
+    
+    // Calculate completion status for a date (0 = none, 0.5 = partial, 1 = complete)
+    func completionStatusForDate(_ date: Date) -> Double {
+        let dateStr = dateString(from: date)
+        let habits = habitsForDate(date)
+        
+        if habits.isEmpty {
+            return 0.0
+        }
+        
+        if let habitsCompleted = habitCompletions[dateStr] {
+            let completedCount = habits.filter { habitsCompleted.contains($0.id) }.count
+            return Double(completedCount) / Double(habits.count)
+        }
+        
+        return 0.0
+    }
+    
+    // Check if a specific habit is completed on a date
+    func isHabitCompletedOnDate(_ habit: Habit, date: Date) -> Bool {
+        let dateStr = dateString(from: date)
+        if let habitsCompleted = habitCompletions[dateStr] {
+            return habitsCompleted.contains(habit.id)
+        }
+        return false
+    }
+    
+    // Toggle a habit's completion for a specific date
+    func toggleHabitCompletion(_ habit: Habit, date: Date) {
+        let dateStr = dateString(from: date)
+        
+        // Initialize if needed
+        if habitCompletions[dateStr] == nil {
+            habitCompletions[dateStr] = []
+        }
+        
+        if let index = habitCompletions[dateStr]?.firstIndex(of: habit.id) {
+            // Remove habit from completed list
+            habitCompletions[dateStr]?.remove(habit.id)
+            
+            // If no habits are completed for this date, remove from completedDays
+            if habitCompletions[dateStr]?.isEmpty ?? true {
+                completedDays.remove(dateStr)
+            }
+        } else {
+            // Add habit to completed list
+            habitCompletions[dateStr]?.insert(habit.id)
+            completedDays.insert(dateStr)
+        }
+        
+        saveHabitCompletions()
+        saveCompletedDays()
+        calculateStats()
+    }
+    
     func toggleCompletionForDate(_ date: Date) {
         let dateStr = dateString(from: date)
         
@@ -170,19 +234,34 @@ class ProgressViewModel : ObservableObject{
             UserDefaults.standard.set(encoded, forKey: "CompletedDays")
         }
     }
+    
+    private func loadHabitCompletions() {
+        if let data = UserDefaults.standard.data(forKey: "HabitCompletions"),
+           let decoded = try? JSONDecoder().decode([String: Set<UUID>].self, from: data) {
+            habitCompletions = decoded
+        }
+    }
+    
+    // Save habit completions to UserDefaults
+    private func saveHabitCompletions() {
+        if let encoded = try? JSONEncoder().encode(habitCompletions) {
+            UserDefaults.standard.set(encoded, forKey: "HabitCompletions")
+        }
+    }
+
     private func calculateStats() {
         //Calculate all stats
-        //calculateStreaks()
-        //calculateCompletionRate()
-        //calculateMonthlyPoints
-        
+        calculateStreaks()
+        calculateCompletionRate()
+        calculateMonthlyPoints()
     }
+    
     private func calculateStreaks() {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
         var currentDate = today
         var currentCount = 0
-        var maxCount = 0
+        var maxCount = longestStreak
         
         // Calculate streak by checking consecutive days backward from today
         while completedDays.contains(dateString(from: currentDate)){
@@ -198,16 +277,15 @@ class ProgressViewModel : ObservableObject{
         }
         //store results
         currentStreak = currentCount
-        longestStreak = max(maxCount, UserDefaults.standard.integer(forKey: "LongestStreak"))
-        
+        maxCount = max(maxCount, currentCount)
+        longestStreak = maxCount
         // Update longest stream in userdeafults if needed
         if longestStreak > UserDefaults.standard.integer(forKey: "LongestStreak") {
             UserDefaults.standard.set(longestStreak, forKey: "LongestStreak")
         }
-        
     }
     
-    private func calculateCompleteionRate() {
+    private func calculateCompletionRate() {
         // calculate completion for the current month
         let calendar = Calendar.current
         let currentMonthDates = daysInMonth.filter {
@@ -224,8 +302,8 @@ class ProgressViewModel : ObservableObject{
         
         let completedCount = currentMonthDates.filter{ isDateCompleted($0) }.count
         completionRate = Double(completedCount) / Double(totalDays)
-        
     }
+    
     private func calculateMonthlyPoints(){
         // Initialize total points
         var points = 0
@@ -235,16 +313,14 @@ class ProgressViewModel : ObservableObject{
         let currentMonthDates = daysInMonth.filter {
             calendar.component(.month, from: $0) == selectedMonth &&
             calendar.component(.year, from: $0) == selectedYear
-            
         }
+        
         // Calculate points for each completed habit on each day
         for date in currentMonthDates {
-            if isDateCompleted(date) {
-                let dayOfWeek = getDayOfWeek(from: date)
-                
-                // Find habits scheduled for this day
-                for habit in HabitViewModel.habits {
-                    if habit.frequency.contains(dayOfWeek) {
+            let dateStr = dateString(from: date)
+            if let habitsCompleted = habitCompletions[dateStr], !habitsCompleted.isEmpty {
+                for habitId in habitsCompleted {
+                    if let habit = habitViewModel.habits.first(where: { $0.id == habitId }) {
                         // Add points based on difficulty
                         switch habit.difficulty {
                         case "Easy":
@@ -264,14 +340,9 @@ class ProgressViewModel : ObservableObject{
         monthlyPoints = points
     }
     
-    
     private func getDayOfWeek(from date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE" // Full day name
         return formatter.string(from: date)
     }
-    
-    
 }
-
-
