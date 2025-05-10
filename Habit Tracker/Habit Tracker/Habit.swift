@@ -12,5 +12,6 @@ struct Habit: Identifiable, Codable {
     var frequency: [String]
     var difficulty: String
     var startDate: Date
+    var timesPerDay: Int
 }
 

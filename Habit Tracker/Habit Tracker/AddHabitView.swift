@@ -1,26 +1,42 @@
 //
 //  AddHabitView.swift
-//  
+//
 //
 //  Created by Paridhi Agarwal on 4/5/2025.
 //
 import SwiftUI
 
 struct AddHabitView: View {
-    @Environment(\.dismiss) var dismiss
     @State private var habitName: String = ""
+    @State private var selectedDays: [String] = []
     @State private var difficulty: String = "Medium"
+    @State private var startDate = Date()
+    @State private var showTime = true
     @State private var notificationEnabled = true
-    @State private var startDate: Date = Date()
+    @State private var notificationTime = Date()
+    @State private var timesPerDay: Int = 1
+    @Environment(\.dismiss) var dismiss
+    @ObservedObject var viewModel: HabitViewModel
+    
+    let allDays = ["M", "T", "W", "T", "F", "S", "S"]
+    let weekdays = ["M0", "T1", "W2", "T3", "F4"]
+    let weekends = ["S5", "S6"]
+    let everyday = ["M0", "T1", "W2", "T3", "F4", "S5", "S6"]
     let difficultyOptions = ["Easy", "Medium", "Hard"]
     
-    @State private var selectedDays: [String] = []
-    let allDays = ["M", "T", "W", "T", "F", "S", "S"]
-
-    @ObservedObject var viewModel: HabitViewModel
+    var isEverydaySelected: Bool {
+        Set(selectedDays) == Set(everyday)
+    }
+    var isWeekdaysSelected: Bool {
+        Set(selectedDays) == Set(weekdays)
+    }
+    var isWeekendsSelected: Bool {
+        Set(selectedDays) == Set(weekends)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20)  {
+            // Header
             HStack {
                 Text("Add a new habit")
                     .font(.title2).bold()
@@ -35,7 +51,6 @@ struct AddHabitView: View {
                 }
             }
             .padding(.horizontal)
-            
             ScrollView {
                 VStack(spacing: 24) {
                 // Habit Name
@@ -51,21 +66,63 @@ struct AddHabitView: View {
                         }
                     }
                     
+                    //How many times per day
+                    CardView {
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("How many times per day?")
+                                .font(.headline)
+                                .foregroundColor(Theme.textPrimary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+
+                            HStack(spacing: 24) {
+                                Button(action: {
+                                    if timesPerDay > 1 {
+                                        timesPerDay -= 1
+                                    }
+                                }) {
+                                    Text("–")
+                                        .font(.title2)
+                                        .frame(width: 40, height: 40)
+                                        .background(Theme.accent)
+                                        .cornerRadius(10)
+                                        .foregroundColor(Theme.textPrimary)
+                                }
+
+                                Text("\(timesPerDay)")
+                                    .font(.title3)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(Theme.textPrimary)
+
+                                Button(action: {
+                                    timesPerDay += 1
+                                }) {
+                                    Text("+")
+                                        .font(.title2)
+                                        .frame(width: 40, height: 40)
+                                        .background(Theme.accent)
+                                        .cornerRadius(10)
+                                        .foregroundColor(Theme.textPrimary)
+                                }
+                            }
+                            .frame(maxWidth: .infinity)
+                            .multilineTextAlignment(.center)
+                        }
+                    }
                     // Frequency
                     CardView {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Frequency")
                                 .font(.headline)
                                 .foregroundColor(Theme.textPrimary)
-                            
+                            // Day Circles
                             HStack {
                                 ForEach(allDays.indices, id: \.self) { index in
-                                    let dayKey = allDays[index] + String(index) // e.g., T0, T3
+                                    let dayKey = allDays[index] + String(index)
                                     Button(action: {
                                         toggleDay(dayKey)
                                     }) {
-                                        Text(String(allDays[index]))
-                                            .fontWeight(.medium)
+                                        Text(allDays[index])
+                                            .fontWeight(.semibold)
                                             .frame(width: 40, height: 40)
                                             .background(selectedDays.contains(dayKey) ? Theme.accent : Theme.muted)
                                             .foregroundColor(Theme.textPrimary)
@@ -73,6 +130,21 @@ struct AddHabitView: View {
                                     }
                                 }
                             }
+                            // Quick Select Buttons
+                            HStack(spacing: 12) {
+                                SelectableBoxButton(label: "Everyday", isSelected: isEverydaySelected) {
+                                    selectedDays = isEverydaySelected ? [] : everyday
+                                }
+                                SelectableBoxButton(label: "Weekdays", isSelected: isWeekdaysSelected) {
+                                    selectedDays = isWeekdaysSelected ? [] : weekdays
+                                }
+                                SelectableBoxButton(label: "Weekends", isSelected: isWeekendsSelected) {
+                                    selectedDays = isWeekendsSelected ? [] : weekends
+                                }
+                                
+                            }
+
+                            .padding(.top, 4)
                         }
                     }
 
@@ -93,7 +165,6 @@ struct AddHabitView: View {
                                                 .lineLimit(1)
                                                 .minimumScaleFactor(0.8)
                                                 .frame(maxWidth: .infinity)
-                                            
                                             Text(points(for: option))
                                                 .font(.caption)
                                                 .lineLimit(1)
@@ -119,11 +190,11 @@ struct AddHabitView: View {
                                 .font(.headline)
                                 .foregroundColor(Theme.textPrimary)
                                 .toggleStyle(SwitchToggleStyle(tint: Theme.textPrimary))
-                            
-                            // TODO: Insert notification time picker and logic here
-                            //if notificationEnabled {
-                            //    show date/time picker
-                            //}
+                            if notificationEnabled {
+                                DatePicker("Time", selection: $notificationTime, displayedComponents: .hourAndMinute)
+                                    .datePickerStyle(.compact)
+                                    .foregroundColor(Theme.textPrimary)
+                            }
                         }
                     }
 
@@ -143,18 +214,18 @@ struct AddHabitView: View {
                             .datePickerStyle(.compact)
                         }
                     }
-                    
                     // Save Button
                     BlueButton(
                         title: "Save",
                         isDisabled: habitName.isEmpty || selectedDays.isEmpty
                     ) {
                         let finalDays = selectedDays.map { cleanDay($0) }
-                        let newHabit = Habit(           //newHabit - habit object will be used later as a display in the dashboard, ignore warning right now
+                        let newHabit = Habit(
                             name: habitName,
                             frequency: finalDays,
                             difficulty: difficulty,
-                            startDate: Date() // replace with startDate var when added
+                            startDate: startDate,
+                            timesPerDay: timesPerDay
                         )
                         viewModel.addHabit(newHabit)
                         habitName = ""
@@ -162,17 +233,16 @@ struct AddHabitView: View {
                         difficulty = "Medium"
                         dismiss()
                     }
-                    
                 }
+                .padding()
             }
-            
-            Spacer()
         }
         .padding()
         .background(Theme.background)
         .ignoresSafeArea()
+        .frame(maxWidth: .infinity)
     }
-    
+
     func toggleDay(_ day: String) {
         if selectedDays.contains(day) {
             selectedDays.removeAll { $0 == day }
@@ -180,16 +250,7 @@ struct AddHabitView: View {
             selectedDays.append(day)
         }
     }
-    
-    private func points(for difficulty: String) -> String {
-        switch difficulty {
-        case "Easy": return "50 points"
-        case "Medium": return "100 pts"
-        case "Hard": return "150 pts"
-        default: return ""
-        }
-    }
-    
+
     func cleanDay(_ raw: String) -> String {
         let letter = String(raw.prefix(1))
         switch letter {
@@ -202,9 +263,13 @@ struct AddHabitView: View {
         }
     }
 
+    private func points(for difficulty: String) -> String {
+        switch difficulty {
+        case "Easy": return "50 points"
+        case "Medium": return "100 pts"
+        case "Hard": return "150 pts"
+        default: return ""
+        }
+    }
 }
-
-
-
-
 

@@ -11,6 +11,7 @@ struct DashboardViewModel: View {
         @ObservedObject var viewModel: HabitViewModel
         @State private var completedHabitsToday: [UUID] = []
         @State private var earnedPoints: Int = 0
+        @State private var habitCompletions: [UUID: Int] = [:]
     
     // Save the completed habits and earned points to UserDefaults
         private func saveData() {
@@ -94,7 +95,7 @@ struct DashboardViewModel: View {
                         }
                         
                         
-                        ForEach(viewModel.habits.filter { !completedHabitsToday.contains($0.id) }) { habit in
+                        ForEach(viewModel.habits) { habit in
                             CardView {
                                 VStack(alignment: .leading, spacing: 10) {
                                     HStack {
@@ -138,8 +139,33 @@ struct DashboardViewModel: View {
                                         }
                                     }
                                     .padding(.top, 4)
+
+                                    if habit.timesPerDay > 1 {
+                                        Stepper {
+                                            let completed = habitCompletions[habit.id, default: 0]
+                                            Text("Completed: \(completed)/\(habit.timesPerDay)")
+                                                .font(.subheadline)
+                                                .foregroundColor(.primary)
+                                        } onIncrement: {
+                                            var current = habitCompletions[habit.id, default: 0]
+                                            if current < habit.timesPerDay {
+                                                current += 1
+                                                habitCompletions[habit.id] = current
+                                                updateCompletion(for: habit)
+                                            }
+                                        } onDecrement: {
+                                            var current = habitCompletions[habit.id, default: 0]
+                                            if current > 0 {
+                                                current -= 1
+                                                habitCompletions[habit.id] = current
+                                                updateCompletion(for: habit)
+                                            }
+                                        }
+                                        .padding(.top, 4)
+                                    }
                                 }
                             }
+                            .opacity(completedHabitsToday.contains(habit.id) ? 0.4 : 1.0)
                         }
                         
                         if viewModel.habits.isEmpty {
@@ -198,6 +224,18 @@ struct DashboardViewModel: View {
                 .reduce(0) { $0 + points(for: $1.difficulty) }
         }
 
+    func updateCompletion(for habit: Habit) {
+        if habitCompletions[habit.id, default: 0] >= habit.timesPerDay {
+            if !completedHabitsToday.contains(habit.id) {
+                completedHabitsToday.append(habit.id)
+            }
+        } else {
+            completedHabitsToday.removeAll { $0 == habit.id }
+        }
+        earnedPoints = calculateEarnedPoints()
+        saveData()
+    }
 
 }
+
 
