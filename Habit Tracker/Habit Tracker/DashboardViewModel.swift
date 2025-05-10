@@ -12,6 +12,8 @@ struct DashboardViewModel: View {
         @State private var completedHabitsToday: [UUID] = []
         @State private var earnedPoints: Int = 0
         @State private var habitCompletions: [UUID: Int] = [:]
+        @State private var showDeleteAlert = false
+        @State private var habitToDelete: Habit?
     
     // Save the completed habits and earned points to UserDefaults
         private func saveData() {
@@ -33,7 +35,7 @@ struct DashboardViewModel: View {
             ZStack {
                 Theme.background
                     .edgesIgnoringSafeArea(.all)
-                ScrollView {
+                List {
                     VStack(spacing: 20) {
                         
                         Text("Welcome to QuokkaQuest!")
@@ -76,10 +78,6 @@ struct DashboardViewModel: View {
                         }
                         
                         
-                        ForEach(viewModel.habits) { habit in
-                            habitCard(for: habit)
-                        }
-                        
                         if viewModel.habits.isEmpty {
                             Text("No habits yet. Add some to track progress.")
                                 .foregroundColor(.gray)
@@ -87,9 +85,30 @@ struct DashboardViewModel: View {
                         }
                         
                     }
-                    .padding()
+                    .listRowSeparator(.hidden)
+                       .listRowBackground(Color.clear)
+
+                       ForEach(viewModel.habits) { habit in
+                           habitCard(for: habit)
+                               .listRowSeparator(.hidden)
+                               .listRowBackground(Color.clear)
+                       }
+                   }
+                   .listStyle(.plain)
+                   .background(Theme.background)
+                
+                .alert("Are you sure you want to delete this habit?", isPresented: $showDeleteAlert, presenting: habitToDelete) { habit in
+                    Button("Delete", role: .destructive) {
+                        viewModel.deleteHabit(habit)
+                        viewModel.saveHabits()
+                        completedHabitsToday.removeAll { $0 == habit.id }
+                        earnedPoints = calculateEarnedPoints()
+                    }
+                    Button("Cancel", role: .cancel) {}
+                } message: { _ in
+                    Text("This action cannot be undone.")
                 }
-                .navigationTitle("Welcome to Quokka!")
+
         }
         .onAppear {
             loadData()
@@ -133,79 +152,89 @@ struct DashboardViewModel: View {
         private func habitCard(for habit: Habit) -> some View {
             CardView {
                 VStack(alignment: .leading, spacing: 10) {
-                    HStack {
-                        Text(habit.name)
-                            .font(.headline)
-                            .foregroundColor(Theme.textPrimary)
-                        Spacer()
-                        Text(habit.difficulty)
-                            .font(.subheadline)
-                            .foregroundColor(.gray)
-                    }
-
-                    HStack(spacing: 5) {
-                        ForEach(habit.frequency, id: \.self) { day in
-                            Text(day.prefix(1).isEmpty ? "?" : String(day.prefix(1)))
-                                .frame(width: 28, height: 28)
-                                .background(Theme.accent)
-                                .clipShape(Circle())
-                                .foregroundColor(Theme.textPrimary)
-                                .font(.caption)
-                        }
-                    }
-
-                    Text("Points: \(points(for: habit.difficulty))")
-                        .font(.caption)
+                HStack {
+                    Text(habit.name)
+                        .font(.headline)
+                        .foregroundColor(Theme.textPrimary)
+                    Spacer()
+                    Text(habit.difficulty)
+                        .font(.subheadline)
                         .foregroundColor(.gray)
-
-                    Button(action: {
-                        if completedHabitsToday.contains(habit.id) {
-                            completedHabitsToday.removeAll { $0 == habit.id }
-                        } else {
-                            completedHabitsToday.append(habit.id)
+                }
+                
+                HStack(spacing: 5) {
+                    ForEach(habit.frequency, id: \.self) { day in
+                        Text(day.prefix(1).isEmpty ? "?" : String(day.prefix(1)))
+                            .frame(width: 28, height: 28)
+                            .background(Theme.accent)
+                            .clipShape(Circle())
+                            .foregroundColor(Theme.textPrimary)
+                            .font(.caption)
+                    }
+                }
+                
+                Text("Points: \(points(for: habit.difficulty))")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                
+                Button(action: {
+                    if completedHabitsToday.contains(habit.id) {
+                        completedHabitsToday.removeAll { $0 == habit.id }
+                    } else {
+                        completedHabitsToday.append(habit.id)
+                    }
+                    earnedPoints = calculateEarnedPoints()
+                    saveData()
+                }) {
+                    HStack {
+                        Image(systemName: completedHabitsToday.contains(habit.id) ? "checkmark.square" : "square")
+                            .foregroundColor(Theme.textPrimary)
+                        Text("Mark as completed today")
+                            .foregroundColor(Theme.textPrimary)
+                    }
+                }
+                .padding(.top, 4)
+                
+                if habit.timesPerDay > 1 {
+                    Stepper {
+                        let completed = habitCompletions[habit.id, default: 0]
+                        Text("Completed: \(completed)/\(habit.timesPerDay)")
+                            .font(.subheadline)
+                            .foregroundColor(Theme.textPrimary)
+                    }
+                    onIncrement: {
+                        var current = habitCompletions[habit.id, default: 0]
+                        if current < habit.timesPerDay {
+                            current += 1
+                            habitCompletions[habit.id] = current
+                            updateCompletion(for: habit)
                         }
-                        earnedPoints = calculateEarnedPoints()
-                        saveData()
-                    }) {
-                        HStack {
-                            Image(systemName: completedHabitsToday.contains(habit.id) ? "checkmark.square" : "square")
-                                .foregroundColor(Theme.textPrimary)
-                            Text("Mark as completed today")
-                                .foregroundColor(Theme.textPrimary)
+                    } onDecrement: {
+                        var current = habitCompletions[habit.id, default: 0]
+                        if current > 0 {
+                            current -= 1
+                            habitCompletions[habit.id] = current
+                            updateCompletion(for: habit)
                         }
                     }
                     .padding(.top, 4)
-
-                    if habit.timesPerDay > 1 {
-                        Stepper {
-                            let completed = habitCompletions[habit.id, default: 0]
-                            Text("Completed: \(completed)/\(habit.timesPerDay)")
-                                .font(.subheadline)
-                                .foregroundColor(Theme.textPrimary)
-                        }
-                        onIncrement: {
-                            var current = habitCompletions[habit.id, default: 0]
-                            if current < habit.timesPerDay {
-                                current += 1
-                                habitCompletions[habit.id] = current
-                                updateCompletion(for: habit)
-                            }
-                        } onDecrement: {
-                            var current = habitCompletions[habit.id, default: 0]
-                            if current > 0 {
-                                current -= 1
-                                habitCompletions[habit.id] = current
-                                updateCompletion(for: habit)
-                            }
-                        }
-                        .padding(.top, 4)
-                        .tint(Theme.accent)
-                    }
                 }
             }
-            .opacity(completedHabitsToday.contains(habit.id) ? 0.4 : 1.0)
         }
-    
+        .opacity(completedHabitsToday.contains(habit.id) ? 0.4 : 1.0)
+        .contentShape(Rectangle())
+        .background(
+            Color(Theme.background)
+        )
+        .swipeActions(edge: .trailing) {
+            Button(role: .destructive) {
+                habitToDelete = habit
+                showDeleteAlert = true
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+        }
+    }
     
     
     
@@ -228,11 +257,17 @@ struct DashboardViewModel: View {
             }
         }
 
-        var progress: Double {
-            let total = Double(viewModel.habits.count)
-            guard total > 0 else { return 0 }
-            return Double(completedHabitsToday.count) / total
-        }
+    var progress: Double {
+        let total = Double(viewModel.habits.count)
+        guard total > 0 else { return 0 }
+
+        let completed = Double(
+            viewModel.habits.filter { completedHabitsToday.contains($0.id) }.count
+        )
+
+        return completed / total
+    }
+
 
        
     

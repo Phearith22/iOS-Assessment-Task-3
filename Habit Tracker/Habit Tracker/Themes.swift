@@ -27,6 +27,7 @@ struct CardView<Content: View>: View {
             .background(Theme.card)
             .cornerRadius(18)
             .shadow(color: .gray.opacity(0.1), radius: 4, x: 0, y: 2)
+            .contentShape(Rectangle())
     }
 }
 //Resusable Blue Button
