@@ -21,6 +21,17 @@ struct DashboardView: View {
                 }
                 .tag(0)
             
+          Progress
+            ProgressView(habitViewModel: HabitViewModel())
+                            .tabItem {
+                                Label("Progress", systemImage: "calendar")
+                            }
+                            .tag(1)
+
+                   
+            
+
+          UpdatedQuokkaApp
             Color.clear
                            .tabItem {
                                Image(systemName: "plus.circle")
