@@ -102,8 +102,85 @@ class YourProgressViewModel : ObservableObject{
             formatter.dateFormat = "yyyy-MM-dd"
             return formatter.string(from: date)
         }
+    func monthYearString() -> String {
+           let dateFormatter = DateFormatter()
+           dateFormatter.dateFormat = "MMMM yyyy"
+           
+           var components = DateComponents()
+           components.month = selectedMonth
+           components.year = selectedYear
+           
+           if let date = Calendar.current.date(from: components) {
+               return dateFormatter.string(from: date)
+           }
+           
+           return "Unknown"
+       }
+    func toggleCompletionForDate(_ date: Date) {
+            let dateStr = dateString(from: date)
+            
+            if completedDays.contains(dateStr) {
+                completedDays.remove(dateStr)
+            } else {
+                completedDays.insert(dateStr)
+            }
+            
+            saveCompletedDays()
+            calculateStats()
+        }
     
+    func isDateCompleted(_ date: Date) -> Bool {
+            return completedDays.contains(dateString(from: date))
+        }
         
+        private func loadCompletedDays() {
+            if let data = UserDefaults.standard.object(forKey: "CompletedDays") as? Data,
+               let decoded = try? JSONDecoder().decode(Set<String>.self, from: data) {
+                completedDays = decoded
+            }
+        }
+        
+        private func saveCompletedDays() {
+            if let encoded = try? JSONEncoder().encode(completedDays) {
+                UserDefaults.standard.set(encoded, forKey: "CompletedDays")
+            }
+        }
+    private func calculateStats() {
+        
+    }
+    private func calculateMonthlyPoints(habits: [Habit]) {
+        // Calculate points based on completed habits and their difficulty
+        var points = 0
+        
+        for habit in habits {
+            // Count how many times this habit was completed this month
+            let completionsThisMonth = daysInMonth.filter { date in
+                // If the date is completed and it's a day this habit should be done
+                let dayOfWeek = getDayOfWeek(from: date)
+                return isDateCompleted(date) && habit.frequency.contains(dayOfWeek)
+            }.count
+            
+            // Calculate points based on difficulty
+            let habitPoints: Int
+            switch habit.difficulty {
+            case "Easy":
+                habitPoints = 50
+            case "Medium":
+                habitPoints = 100
+            case "Hard":
+                habitPoints = 150
+            default:
+                habitPoints = 0
+            }
+            
+            points += completionsThisMonth * habitPoints
+        }
+    }
+    private func getDayOfWeek(from date: Date) -> String {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "EEEE" // Full day name
+            return formatter.string(from: date)
+        }
     
     
     
