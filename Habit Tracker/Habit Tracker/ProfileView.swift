@@ -25,7 +25,7 @@ struct ProfileView: View {
                     // Profile Summary Card
                     VStack(spacing: 16) {
                         HStack(alignment: .top, spacing: 16) {
-                            Image("Happy_quokka")
+                            Image("Happy quokka")
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 64, height: 64)
@@ -89,8 +89,10 @@ struct ProfileView: View {
                 .padding(.top, 16)
                 .padding(.bottom, 32)
             }
-            .background(Theme.background)
-            .ignoresSafeArea()
+            .background(
+                Theme.background
+                    .ignoresSafeArea()
+            )
         }
     }
 }

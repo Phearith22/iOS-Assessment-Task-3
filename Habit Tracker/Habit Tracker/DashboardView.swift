@@ -21,14 +21,6 @@ struct DashboardView: View {
                 }
                 .tag(0)
             
-            ProgressView()
-                            .tabItem {
-                                Label("Progress", systemImage: "calendar")
-                            }
-                            .tag(1)
-
-                   
-            
             Color.clear
                            .tabItem {
                                Image(systemName: "plus.circle")
@@ -40,6 +32,15 @@ struct DashboardView: View {
                                selectedTab = 0
                            }
                            .tag(3)
+            
+            ProgressView()
+                            .tabItem {
+                                Label("Progress", systemImage: "calendar")
+                            }
+                            .tag(1)
+
+                   
+            
 
                     ProfileView(viewModel: viewModel)
                         .tabItem {

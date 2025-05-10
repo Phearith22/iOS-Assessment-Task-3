@@ -10,7 +10,9 @@ struct SplashView: View {
     @State private var isLoggedIn = false
 
     var body: some View {
-        NavigationStack {
+        if isLoggedIn {
+            DashboardView(viewModel: HabitViewModel())
+        } else {
             VStack(spacing: 20) {
                 Spacer()
 
@@ -20,7 +22,7 @@ struct SplashView: View {
                         .frame(width: 220, height: 50)
                         .offset(y: 120)
 
-                    Image("Happy_quokka")
+                    Image("Happy quokka")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 320, height: 360)

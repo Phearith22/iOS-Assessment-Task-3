@@ -30,12 +30,18 @@ struct DashboardViewModel: View {
 
 
     var body: some View {
-        NavigationView {
             ZStack {
                 Theme.background
                     .edgesIgnoringSafeArea(.all)
                 ScrollView {
                     VStack(spacing: 20) {
+                        
+                        Text("Welcome to QuokkaQuest!")
+                            .font(.title)
+                            .fontWeight(.bold)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.horizontal)
+
                         HStack(spacing: 10) {
                             ForEach(0..<7) { index in
                                 let date = Calendar.current.date(byAdding: .day, value: index, to: startOfWeek)!
@@ -178,8 +184,6 @@ struct DashboardViewModel: View {
                     .padding()
                 }
                 .navigationTitle("Welcome to Quokka!")
-            }
-            .background(Theme.background)
         }
         .onAppear {
             loadData()
