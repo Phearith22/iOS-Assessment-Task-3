@@ -16,10 +16,10 @@ class ProgressViewModel : ObservableObject{
     @Published var daysInMonth: [Date] = []
     @Published var completedDays: Set<String> = []
     //stats
-    @Published var currentStreak: Int = 5
-    @Published var longestStreak: Int = 10
-    @Published var completionRate: Double = 0.7
-    @Published var monthlyPoints: Int = 2400
+    @Published var currentStreak: Int = 0
+     @Published var longestStreak: Int = 0
+     @Published var completionRate: Double = 0.0
+     @Published var monthlyPoints: Int = 0
     
     private var HabitViewModel : HabitViewModel
     private var cancellables = Set<AnyCancellable>()
