@@ -7,35 +7,21 @@
 import SwiftUI
 
 struct ProgressView: View {
-
-    @State private var color: Color = .blue
-    @State private var date = Date.now
+    @StateObject var viewModel: ProgressViewModel
     let daysOfWeek = ["M", "T", "W", "T", "F", "S", "S"]
+    
+    init(habitViewModel: HabitViewModel) {
+        _viewModel = StateObject(wrappedValue: ProgressViewModel(habitViewModel: habitViewModel))
+    }
+    
     var body: some View {
-        NavigationView{
-            ZStack{
-                Color(.white.withAlphaComponent(0.2))
-                    .ignoresSafeArea()
-                VStack {
-                    
-                    
-                    Text("Your Progress")
-                        .font(.title)
-                        .padding()
-                        .fontWeight(.bold)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    ScrollView{
-                        VStack(spacing: 16){
-                            //calander component
-                            
-                            //statsSection
-                            
-                            Spacer()
-                        }
-                    }
-                    //tabbat
-                }
-            }
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Your Progress")
+                .font(.title)
+                .fontWeight(.bold)
+                .foregroundColor(Theme.textPrimary)
+                .padding(.top)
+                .padding(.horizontal)
         }
     }
 }
