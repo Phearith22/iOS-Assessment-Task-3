@@ -31,30 +31,47 @@ class ProgressViewModel : ObservableObject{
         self.selectedMonth = components.month ?? 1
         self.selectedYear = components.year ?? 2025
         self.HabitViewModel = habitViewModel
-        // Initial setup
-        // self.generateDaysForSelectedMonth()
-        //self.loadCompletedDays()
+        //Load Initial data
+        self.generateDaysForSelectedMonth()
+        self.loadCompletedDays()
         habitViewModel.$habits
+        
             .sink { [weak self] habits in
-                self?.loadCompletedDays()
                 self?.calculateStats()
+              
             }
         
             .store(in: &cancellables)
+        
+        //calculate intial stats
+        self.calculateStats()
     }
     
     func generateDaysForSelectedMonth() {
         daysInMonth.removeAll()
+        
+        let calendar = Calendar.current
         
         var dateComponents = DateComponents()
         dateComponents.month = selectedMonth
         dateComponents.year = selectedYear
         dateComponents.day = 1
         
-        let calendar = Calendar.current
         
         //get the first day of the month
         guard let firstDayOfMonth = calendar.date(from: dateComponents) else { return }
+        
+        //Calculate start of first week to get proper grid alignment
+        let firstWeekday = calendar.component(.weekday, from: firstDayOfMonth)
+        let weekdayOffset = (firstWeekday + 5) % 7 // Adjusting for Monday as first day (1)
+        if weekdayOffset > 0 {
+                    // Add days from previous month to fill the first week
+                    for i in 0..<weekdayOffset {
+                        if let date = calendar.date(byAdding: .day, value: -weekdayOffset + i, to: firstDayOfMonth) {
+                            daysInMonth.append(date)
+                        }
+                    }
+                }
         
         // get the range of days in the month
         guard let range = calendar.range(of: .day, in: .month, for: firstDayOfMonth) else {return}
