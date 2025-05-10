@@ -25,11 +25,10 @@ struct ProfileView: View {
                     // Profile Summary Card
                     VStack(spacing: 16) {
                         HStack(alignment: .top, spacing: 16) {
-                            Image("Happy quokka")
+                            Image("Happyquokka")
                                 .resizable()
                                 .scaledToFit()
                                 .frame(width: 64, height: 64)
-                                .clipShape(Circle())
 
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("Samantha C")

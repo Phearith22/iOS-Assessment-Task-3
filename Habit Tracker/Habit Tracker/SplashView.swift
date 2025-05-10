@@ -17,20 +17,28 @@ struct SplashView: View {
                 Spacer()
 
                 ZStack {
+                    Theme.background
+                            .ignoresSafeArea()
                     Ellipse()
                         .fill(Theme.accent)
                         .frame(width: 220, height: 50)
                         .offset(y: 120)
 
-                    Image("Happy quokka")
+                    Image("Happyquokka")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: 320, height: 360)
+                        .frame(width: 200, height: 360)
+                        .padding(.vertical, -50)
+                        .frame(maxWidth: .infinity)
+                        .offset(x: 10)
                 }
+                .frame(maxWidth: .infinity)
 
-                Text("QuokkaQuest")
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundColor(Theme.textPrimary)
+                Image("logo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 170)
+                    .padding(.top, -60)
 
                 Button {
                     isLoggedIn = true
@@ -82,11 +90,8 @@ struct SplashView: View {
             }
             .padding(.horizontal, 28)
             .padding(.top, 30)
-            .background(Theme.background)
-            .ignoresSafeArea()
-            .navigationDestination(isPresented: $isLoggedIn) {
-                DashboardView(viewModel: HabitViewModel())
-            }
+            .background(Theme.background.ignoresSafeArea())
         }
+           
     }
 }
