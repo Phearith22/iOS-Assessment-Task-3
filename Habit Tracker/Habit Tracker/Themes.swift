@@ -27,6 +27,7 @@ struct CardView<Content: View>: View {
             .background(Theme.card)
             .cornerRadius(18)
             .shadow(color: .gray.opacity(0.1), radius: 4, x: 0, y: 2)
+            .contentShape(Rectangle())
     }
 }
 //Resusable Blue Button
@@ -46,6 +47,27 @@ struct BlueButton: View {
         }
         .disabled(isDisabled)
         .opacity(isDisabled ? 0.5 : 1.0)
+    }
+}
+
+struct SelectableBoxButton: View {
+    let label: String
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Text(label)
+                .fontWeight(.semibold)
+                .font(.system(size: 16))
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+                .padding(.vertical, 10)
+                .padding(.horizontal, 16)
+                .background(isSelected ? Theme.accent : Theme.muted)
+                .cornerRadius(12)
+                .foregroundColor(Theme.primary)
+        }
     }
 }
 

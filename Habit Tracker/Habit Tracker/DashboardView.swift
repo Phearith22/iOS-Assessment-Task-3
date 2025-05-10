@@ -2,7 +2,7 @@
 //  DashboardView.swift
 //  
 //
-//  Created by Paridhi Agarwal on 4/5/2025.
+//  Created by Pichsophearith lay on 9/5/2025.
 //
 import SwiftUI
 
@@ -21,6 +21,7 @@ struct DashboardView: View {
                 }
                 .tag(0)
             
+          Progress
             ProgressView(habitViewModel: HabitViewModel())
                             .tabItem {
                                 Label("Progress", systemImage: "calendar")
@@ -29,6 +30,8 @@ struct DashboardView: View {
 
                    
             
+
+          UpdatedQuokkaApp
             Color.clear
                            .tabItem {
                                Image(systemName: "plus.circle")
@@ -40,8 +43,17 @@ struct DashboardView: View {
                                selectedTab = 0
                            }
                            .tag(3)
+            
+            ProgressView()
+                            .tabItem {
+                                Label("Progress", systemImage: "calendar")
+                            }
+                            .tag(1)
 
-                    ProfileView()
+                   
+            
+
+                    ProfileView(viewModel: viewModel)
                         .tabItem {
                             Label("Profile", systemImage: "person")
                         }

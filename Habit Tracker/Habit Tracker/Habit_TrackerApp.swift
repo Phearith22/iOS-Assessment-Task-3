@@ -11,8 +11,8 @@ import SwiftUI
 struct Habit_TrackerApp: App {
     var body: some Scene {
         WindowGroup {
-            //SplashView() //should actually start with splashview
-            DashboardView(viewModel: HabitViewModel()) //starting with dashboard view to test
+            SplashView() //should actually start with splashview
+            //DashboardView(viewModel: HabitViewModel()) //starting with dashboard view to test
         }
     }
 }
