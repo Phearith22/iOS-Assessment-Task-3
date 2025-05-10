@@ -41,53 +41,28 @@ struct DashboardViewModel: View {
                             .fontWeight(.bold)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal)
-
-                        HStack(spacing: 10) {
-                            ForEach(0..<7) { index in
-                                let date = Calendar.current.date(byAdding: .day, value: index, to: startOfWeek)!
-                                let weekdaySymbol = weekdaySymbols[index]
-                                let dayNumber = Calendar.current.component(.day, from: date)
-                                let isToday = Calendar.current.isDateInToday(date)
-
-                                VStack {
-                                    Text(weekdaySymbol)
-                                        .font(.caption)
-                                        .foregroundColor(.gray)
-                                    Text("\(dayNumber)")
-                                        .fontWeight(isToday ? .bold : .regular)
-                                        .foregroundColor(isToday ? .white : .black)
-                                        .frame(width: 28, height: 28)
-                                        .background(isToday ? Color.black : Color.clear)
-                                        .clipShape(Circle())
-                                }
-                                .frame(maxWidth: .infinity)
-                            }
-                        }
-                        .padding()
-                        .background(Theme.card)
-                        .cornerRadius(12)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.black, lineWidth: 2)
-                        )
-                                                   
-                        .shadow(color: .gray.opacity(0.1), radius: 4, x: 0, y: 2)
+                            .foregroundColor(Theme.textPrimary)
                         
-                        Image(systemName: "trophy")
+                        calendarHeader
+                        
+                        Image(quokkaImageName)
                             .resizable()
                             .scaledToFit()
-                            .frame(width: 50, height: 50)
-                            .padding()
+                            .frame(width: 150, height: 150)
+                            .offset(x: 7)
+                            .shadow(radius: 4)
+
                         
                         if !viewModel.habits.isEmpty {
                             VStack(alignment: .leading, spacing: 10) {
                                 // Total points
                                 Text("Daily Quokkies: \(earnedPoints) ★")
                                     .font(.headline)
+                                    .foregroundColor(Theme.textPrimary)
                                 HStack {
                                 // Progress bar
                                 SwiftUI.ProgressView(value: progress)
-                                    .accentColor(.black)
+                                    .accentColor(Theme.textPrimary)
                                     .frame(height: 8)
                                 
                                 Text("\(earnedPoints)/\(totalPoints)")
@@ -102,76 +77,7 @@ struct DashboardViewModel: View {
                         
                         
                         ForEach(viewModel.habits) { habit in
-                            CardView {
-                                VStack(alignment: .leading, spacing: 10) {
-                                    HStack {
-                                        Text(habit.name)
-                                            .font(.headline)
-                                            .foregroundColor(Theme.textPrimary)
-                                        Spacer()
-                                        Text(habit.difficulty)
-                                            .font(.subheadline)
-                                            .foregroundColor(.gray)
-                                    }
-                                    HStack(spacing: 5) {
-                                        ForEach(habit.frequency, id: \.self) { day in
-                                            Text(day.prefix(1))
-                                                .frame(width: 28, height: 28)
-                                                .background(Theme.accent)
-                                                .clipShape(Circle())
-                                                .foregroundColor(.black)
-                                                .font(.caption)
-                                        }
-                                    }
-                                    Text("Points: \(points(for: habit.difficulty))")
-                                        .font(.caption)
-                                        .foregroundColor(.gray)
-                                    
-                                    
-                                    Button(action: {
-                                        if completedHabitsToday.contains(habit.id) {
-                                            completedHabitsToday.removeAll { $0 == habit.id }
-                                        } else {
-                                            completedHabitsToday.append(habit.id)
-                                        }
-                                        earnedPoints = calculateEarnedPoints()
-                                        saveData()
-                                    }) {
-                                        HStack {
-                                            Image(systemName: completedHabitsToday.contains(habit.id) ? "checkmark.square" : "square")
-                                                .foregroundColor(.black)
-                                            Text("Mark as completed today")
-                                                .foregroundColor(.primary)
-                                        }
-                                    }
-                                    .padding(.top, 4)
-
-                                    if habit.timesPerDay > 1 {
-                                        Stepper {
-                                            let completed = habitCompletions[habit.id, default: 0]
-                                            Text("Completed: \(completed)/\(habit.timesPerDay)")
-                                                .font(.subheadline)
-                                                .foregroundColor(.primary)
-                                        } onIncrement: {
-                                            var current = habitCompletions[habit.id, default: 0]
-                                            if current < habit.timesPerDay {
-                                                current += 1
-                                                habitCompletions[habit.id] = current
-                                                updateCompletion(for: habit)
-                                            }
-                                        } onDecrement: {
-                                            var current = habitCompletions[habit.id, default: 0]
-                                            if current > 0 {
-                                                current -= 1
-                                                habitCompletions[habit.id] = current
-                                                updateCompletion(for: habit)
-                                            }
-                                        }
-                                        .padding(.top, 4)
-                                    }
-                                }
-                            }
-                            .opacity(completedHabitsToday.contains(habit.id) ? 0.4 : 1.0)
+                            habitCard(for: habit)
                         }
                         
                         if viewModel.habits.isEmpty {
@@ -190,6 +96,118 @@ struct DashboardViewModel: View {
         }
         
     }
+    private var calendarHeader: some View {
+        HStack(spacing: 10) {
+            ForEach(0..<7) { index in
+                let date = Calendar.current.date(byAdding: .day, value: index, to: startOfWeek)!
+                let weekdaySymbol = weekdaySymbols[index]
+                let dayNumber = Calendar.current.component(.day, from: date)
+                let isToday = Calendar.current.isDateInToday(date)
+
+                VStack {
+                    Text(weekdaySymbol)
+                        .font(.caption)
+                        .foregroundColor(.gray)
+
+                    Text("\(dayNumber)")
+                        .fontWeight(isToday ? .bold : .regular)
+                        .foregroundColor(isToday ? .white : Theme.textPrimary)
+                        .frame(width: 28, height: 28)
+                        .background(isToday ? Theme.textPrimary : Color.clear)
+                        .clipShape(Circle())
+                }
+                .frame(maxWidth: .infinity)
+            }
+        }
+        .padding()
+        .background(Theme.card)
+        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Theme.textPrimary, lineWidth: 2)
+        )
+        .shadow(color: .gray.opacity(0.1), radius: 4, x: 0, y: 2)
+    }
+    
+    @ViewBuilder
+        private func habitCard(for habit: Habit) -> some View {
+            CardView {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        Text(habit.name)
+                            .font(.headline)
+                            .foregroundColor(Theme.textPrimary)
+                        Spacer()
+                        Text(habit.difficulty)
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                    }
+
+                    HStack(spacing: 5) {
+                        ForEach(habit.frequency, id: \.self) { day in
+                            Text(day.prefix(1).isEmpty ? "?" : String(day.prefix(1)))
+                                .frame(width: 28, height: 28)
+                                .background(Theme.accent)
+                                .clipShape(Circle())
+                                .foregroundColor(Theme.textPrimary)
+                                .font(.caption)
+                        }
+                    }
+
+                    Text("Points: \(points(for: habit.difficulty))")
+                        .font(.caption)
+                        .foregroundColor(.gray)
+
+                    Button(action: {
+                        if completedHabitsToday.contains(habit.id) {
+                            completedHabitsToday.removeAll { $0 == habit.id }
+                        } else {
+                            completedHabitsToday.append(habit.id)
+                        }
+                        earnedPoints = calculateEarnedPoints()
+                        saveData()
+                    }) {
+                        HStack {
+                            Image(systemName: completedHabitsToday.contains(habit.id) ? "checkmark.square" : "square")
+                                .foregroundColor(Theme.textPrimary)
+                            Text("Mark as completed today")
+                                .foregroundColor(Theme.textPrimary)
+                        }
+                    }
+                    .padding(.top, 4)
+
+                    if habit.timesPerDay > 1 {
+                        Stepper {
+                            let completed = habitCompletions[habit.id, default: 0]
+                            Text("Completed: \(completed)/\(habit.timesPerDay)")
+                                .font(.subheadline)
+                                .foregroundColor(Theme.textPrimary)
+                        }
+                        onIncrement: {
+                            var current = habitCompletions[habit.id, default: 0]
+                            if current < habit.timesPerDay {
+                                current += 1
+                                habitCompletions[habit.id] = current
+                                updateCompletion(for: habit)
+                            }
+                        } onDecrement: {
+                            var current = habitCompletions[habit.id, default: 0]
+                            if current > 0 {
+                                current -= 1
+                                habitCompletions[habit.id] = current
+                                updateCompletion(for: habit)
+                            }
+                        }
+                        .padding(.top, 4)
+                        .tint(Theme.accent)
+                    }
+                }
+            }
+            .opacity(completedHabitsToday.contains(habit.id) ? 0.4 : 1.0)
+        }
+    
+    
+    
     
     private var startOfWeek: Date {
             Calendar.current.date(from: Calendar.current.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date()))!
@@ -239,6 +257,17 @@ struct DashboardViewModel: View {
         earnedPoints = calculateEarnedPoints()
         saveData()
     }
+    
+    var quokkaImageName: String {
+        if earnedPoints == 0 {
+            return "sadquokka"
+        } else if earnedPoints < totalPoints {
+            return "normalquokka"
+        } else {
+            return "Happyquokka"
+        }
+    }
+
 
 }
 
