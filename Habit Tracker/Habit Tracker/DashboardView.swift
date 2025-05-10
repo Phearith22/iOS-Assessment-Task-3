@@ -21,7 +21,7 @@ struct DashboardView: View {
                 }
                 .tag(0)
             
-            ProgressView()
+            ProgressView(habitViewModel: HabitViewModel())
                             .tabItem {
                                 Label("Progress", systemImage: "calendar")
                             }

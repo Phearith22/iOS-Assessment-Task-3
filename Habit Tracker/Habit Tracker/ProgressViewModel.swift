@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 import Combine
 
-class YourProgressViewModel : ObservableObject{
+class ProgressViewModel : ObservableObject{
     @Published var selectedMonth: Int
     @Published var selectedYear: Int
     @Published var currentDate = Date()
