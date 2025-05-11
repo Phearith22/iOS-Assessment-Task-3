@@ -40,7 +40,10 @@ struct ProgressView: View {
             .onAppear {
                 viewModel.generateDaysForSelectedMonth()
             }
-            .sheet(isPresented: $showHabitList) {
+            .sheet(isPresented: $showHabitList, onDismiss: {
+                viewModel.generateDaysForSelectedMonth()
+                viewModel.calculateStats()
+            }) {
                 if let date = selectedDate {
                     DayHabitsView(
                         date: date,
@@ -105,6 +108,7 @@ struct ProgressView: View {
                         showHabitList = true
                     }
                 )
+                .id(viewModel.dateString(from: date))
             }
         }
         .padding(.horizontal)

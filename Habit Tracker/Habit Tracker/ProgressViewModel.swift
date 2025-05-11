@@ -13,7 +13,7 @@ class ProgressViewModel : ObservableObject{
     @Published var currentDate = Date()
     @Published var daysInMonth: [Date] = []
     @Published var completedDays: Set<String> = [] // tracks completed dates
-    @Published var habitCompletions: [String: Set<UUID>] = [:] // Tracks habits completed on each date
+    
 
     //stats
     @Published var currentStreak: Int = 0
@@ -33,12 +33,13 @@ class ProgressViewModel : ObservableObject{
         self.habitViewModel = habitViewModel
         //Load Initial data
         loadCompletedDays()
-        loadHabitCompletions()
         
         habitViewModel.$habits
-            .sink { [weak self] habits in
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
                 self?.generateDaysForSelectedMonth()
                 self?.calculateStats()
+                self?.objectWillChange.send()
             }
             .store(in: &cancellables)
         
@@ -159,13 +160,11 @@ class ProgressViewModel : ObservableObject{
         if habits.isEmpty {
             return 0.0
         }
-        
-        if let habitsCompleted = habitCompletions[dateStr] {
-            let completedCount = habits.filter { habitsCompleted.contains($0.id) }.count
-            return Double(completedCount) / Double(habits.count)
-        }
-        
-        return 0.0
+        let completed = habits.filter { habit in
+            habitViewModel.habitCompletions[dateStr]?.contains(habit.id) == true
+        }.count
+
+        return Double(completed) / Double(habits.count)
     }
     
     // Check if a specific habit is completed on a date
@@ -176,6 +175,8 @@ class ProgressViewModel : ObservableObject{
     // Toggle a habit's completion for a specific date
     func toggleHabitCompletion(_ habit: Habit, date: Date) {
         habitViewModel.toggleHabitCompletion(habit, date: date)
+        calculateStats()
+        objectWillChange.send()
     }
     
     func toggleCompletionForDate(_ date: Date) {
@@ -207,22 +208,8 @@ class ProgressViewModel : ObservableObject{
             UserDefaults.standard.set(encoded, forKey: "CompletedDays")
         }
     }
-    
-    private func loadHabitCompletions() {
-        if let data = UserDefaults.standard.data(forKey: "HabitCompletions"),
-           let decoded = try? JSONDecoder().decode([String: Set<UUID>].self, from: data) {
-            habitCompletions = decoded
-        }
-    }
-    
-    // Save habit completions to UserDefaults
-    private func saveHabitCompletions() {
-        if let encoded = try? JSONEncoder().encode(habitCompletions) {
-            UserDefaults.standard.set(encoded, forKey: "HabitCompletions")
-        }
-    }
 
-    private func calculateStats() {
+    func calculateStats() {
         //Calculate all stats
         calculateStreaks()
         calculateCompletionRate()
@@ -291,7 +278,7 @@ class ProgressViewModel : ObservableObject{
         // Calculate points for each completed habit on each day
         for date in currentMonthDates {
             let dateStr = dateString(from: date)
-            if let habitsCompleted = habitCompletions[dateStr], !habitsCompleted.isEmpty {
+            if let habitsCompleted = habitViewModel.habitCompletions[dateStr], !habitsCompleted.isEmpty {
                 for habitId in habitsCompleted {
                     if let habit = habitViewModel.habits.first(where: { $0.id == habitId }) {
                         // Add points based on difficulty
