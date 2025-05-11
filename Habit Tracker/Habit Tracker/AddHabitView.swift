@@ -252,13 +252,14 @@ struct AddHabitView: View {
     }
 
     func cleanDay(_ raw: String) -> String {
-        let letter = String(raw.prefix(1))
-        switch letter {
-            case "M": return "Monday"
-            case "T": return raw.contains("0") ? "Tuesday" : "Thursday"
-            case "W": return "Wednesday"
-            case "F": return "Friday"
-            case "S": return raw.contains("5") ? "Saturday" : "Sunday"
+        switch raw {
+            case "M0": return "Monday"
+            case "T1": return "Tuesday"
+            case "W2": return "Wednesday"
+            case "T3": return "Thursday"
+            case "F4": return "Friday"
+            case "S5": return "Saturday"
+            case "S6": return "Sunday"
             default: return raw
         }
     }
