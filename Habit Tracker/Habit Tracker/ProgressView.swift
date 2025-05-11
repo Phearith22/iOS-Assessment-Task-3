@@ -278,6 +278,8 @@ struct HabitRowView: View {
                 Text(habit.name)
                     .font(.headline)
                 
+                    .foregroundColor(Theme.textPrimary)
+
                 Text("Difficulty: \(habit.difficulty)")
                     .font(.subheadline)
                     .foregroundColor(.gray)
@@ -285,11 +287,15 @@ struct HabitRowView: View {
             
             Spacer()
             
-            Toggle("", isOn: Binding(
-                get: { viewModel.isHabitCompletedOnDate(habit, date: date) },
-                set: { _ in viewModel.toggleHabitCompletion(habit, date: date) }
-            ))
-            .labelsHidden()
+            Text(viewModel.isHabitCompletedOnDate(habit, date: date) ? "Completed" : "Pending")
+                .font(.caption)
+                .fontWeight(.semibold)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(viewModel.isHabitCompletedOnDate(habit, date: date) ? Color.green.opacity(0.2) : Color.gray.opacity(0.2))
+                .foregroundColor(viewModel.isHabitCompletedOnDate(habit, date: date) ? Color.green : Color.gray)
+                .clipShape(Capsule())
         }
+        .padding(.vertical, 6)
     }
 }
