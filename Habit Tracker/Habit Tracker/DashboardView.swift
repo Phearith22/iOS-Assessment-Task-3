@@ -38,7 +38,7 @@ struct DashboardView: View {
                 }
                 .tag(1)
             
-            ProfileView(viewModel: viewModel)
+            ProfileView(viewModel: viewModel, progressViewModel: ProgressViewModel(habitViewModel: viewModel))
                 .tabItem {
                     Label("Profile", systemImage: "person")
                 }

@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ProfileView: View {
     @ObservedObject var viewModel: HabitViewModel
-    var currentStreak = 5
+    @ObservedObject var progressViewModel: ProgressViewModel
     var daysActive = 45
 
     var body: some View {
@@ -54,7 +54,7 @@ struct ProfileView: View {
                         Divider()
                         ProfileStatRow(label: "Current Habits", value: "\(viewModel.habits.count)")
                         Divider()
-                        ProfileStatRow(label: "Current Streak", value: "\(currentStreak)")
+                        ProfileStatRow(label: "Current Streak", value: "\(progressViewModel.currentStreak)")
                         Divider()
                         ProfileStatRow(label: "Days Active", value: "\(daysActive)")
                     }
