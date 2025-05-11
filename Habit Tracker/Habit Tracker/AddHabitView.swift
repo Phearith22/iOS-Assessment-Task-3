@@ -11,12 +11,12 @@ struct AddHabitView: View {
     @State private var selectedDays: [String] = []
     @State private var difficulty: String = "Medium"
     @State private var startDate = Date()
-    @State private var showTime = true
     @State private var notificationEnabled = true
     @State private var notificationTime = Date()
     @State private var timesPerDay: Int = 1
     @Environment(\.dismiss) var dismiss
     @ObservedObject var viewModel: HabitViewModel
+    @Binding var selectedTab: Int
     
     let allDays = ["M", "T", "W", "T", "F", "S", "S"]
     let weekdays = ["M0", "T1", "W2", "T3", "F4"]
@@ -43,6 +43,7 @@ struct AddHabitView: View {
                     .foregroundColor(Theme.textPrimary)
                     Spacer()
                     Button(action: {
+                    selectedTab = 0
                     dismiss()
                     }) {
                         Image(systemName: "xmark")
@@ -61,7 +62,6 @@ struct AddHabitView: View {
                                 .foregroundColor(Theme.textPrimary)
                             TextField("e.g. Drink Water", text: $habitName)
                                 .padding()
-                                .background(Color.white)
                                 .cornerRadius(8)
                         }
                     }
@@ -242,6 +242,7 @@ struct AddHabitView: View {
                         habitName = ""
                         selectedDays = []
                         difficulty = "Medium"
+                        selectedTab = 0 
                         dismiss()
                     }
                 }

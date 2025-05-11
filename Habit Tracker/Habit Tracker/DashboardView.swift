@@ -6,9 +6,13 @@
 //
 import SwiftUI
 
+struct AddHabitTrigger: Identifiable {
+    let id = UUID()
+}
+
 struct DashboardView: View {
     @ObservedObject var viewModel: HabitViewModel
-    @State private var showAddHabit = false
+    @State private var showAddHabitSheetTrigger: AddHabitTrigger?
     @State private var selectedTab = 0
     
     var body: some View {
@@ -27,29 +31,29 @@ struct DashboardView: View {
                     Image(systemName: "plus.circle")
                     Text("Add")
                 }
-                .onAppear {
-                    showAddHabit = true
-                    selectedTab = 0
-                }
                 .tag(3)
-  
             ProgressView(habitViewModel: viewModel)
                 .tabItem {
                     Label("Progress", systemImage: "calendar")
                 }
                 .tag(1)
-
-                    ProfileView(viewModel: viewModel)
-                        .tabItem {
-                            Label("Profile", systemImage: "person")
-                        }
-                        .tag(2)
-                }
-        .sheet(isPresented: $showAddHabit) {
-            AddHabitView(viewModel: viewModel)
             
+            ProfileView(viewModel: viewModel)
+                .tabItem {
+                    Label("Profile", systemImage: "person")
+                }
+                .tag(2)
         }
-           
+        .onChange(of: selectedTab) {
+            if selectedTab == 3 {
+                selectedTab = 0
+                showAddHabitSheetTrigger = AddHabitTrigger()
+            }
+        }
+        .sheet(item: $showAddHabitSheetTrigger) { _ in
+            AddHabitView(viewModel: viewModel, selectedTab: $selectedTab)
+        }
+    
     }
 }
 

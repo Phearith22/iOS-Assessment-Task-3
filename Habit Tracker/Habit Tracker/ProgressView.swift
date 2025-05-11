@@ -5,10 +5,15 @@
 //
 import SwiftUI
 
+struct SelectedDateWrapper: Identifiable {
+    let id = UUID()
+    let date: Date
+}
+
+
 struct ProgressView: View {
     @StateObject var viewModel: ProgressViewModel
-    @State private var selectedDate: Date?
-    @State private var showHabitList = false
+    @State private var selectedDate: SelectedDateWrapper?
     
     init(habitViewModel: HabitViewModel) {
         _viewModel = StateObject(wrappedValue: ProgressViewModel(habitViewModel: habitViewModel))
@@ -40,17 +45,15 @@ struct ProgressView: View {
             .onAppear {
                 viewModel.generateDaysForSelectedMonth()
             }
-            .sheet(isPresented: $showHabitList, onDismiss: {
+            .sheet(item: $selectedDate, onDismiss: {
                 viewModel.generateDaysForSelectedMonth()
                 viewModel.calculateStats()
-            }) {
-                if let date = selectedDate {
-                    DayHabitsView(
-                        date: date,
-                        habits: viewModel.habitsForDate(date),
-                        viewModel: viewModel
-                    )
-                }
+            }) { wrapper in
+                DayHabitsView(
+                    date: wrapper.date,
+                    habits: viewModel.habitsForDate(wrapper.date),
+                    viewModel: viewModel
+                )
             }
         }
     }
@@ -104,11 +107,9 @@ struct ProgressView: View {
                     completionStatus: viewModel.completionStatusForDate(date),
                     habitsCount: viewModel.habitsForDate(date).count,
                     onTap: {
-                        selectedDate = date
-                        showHabitList = true
+                        selectedDate = SelectedDateWrapper(date: date)
                     }
                 )
-                .id(viewModel.dateString(from: date))
             }
         }
         .padding(.horizontal)
@@ -178,7 +179,6 @@ struct CalendarDayView: View {
                     Circle()
                         .frame(width: 6, height: 6)
                         .foregroundColor(colorForCompletionStatus())
-                        .opacity(habitsCount > 0 ? 1.0 : 0.0)
                 }
             }
             .padding(.vertical, 4)
