@@ -21,37 +21,23 @@ struct DashboardView: View {
                 }
                 .tag(0)
             
-          Progress
-            ProgressView(habitViewModel: HabitViewModel())
-                            .tabItem {
-                                Label("Progress", systemImage: "calendar")
-                            }
-                            .tag(1)
-
-                   
             
-
-          UpdatedQuokkaApp
             Color.clear
-                           .tabItem {
-                               Image(systemName: "plus.circle")
-                               Text("Add")
-                           }
-                           .onAppear {
-                              
-                               showAddHabit = true
-                               selectedTab = 0
-                           }
-                           .tag(3)
-            
-            ProgressView()
-                            .tabItem {
-                                Label("Progress", systemImage: "calendar")
-                            }
-                            .tag(1)
-
-                   
-            
+                .tabItem {
+                    Image(systemName: "plus.circle")
+                    Text("Add")
+                }
+                .onAppear {
+                    showAddHabit = true
+                    selectedTab = 0
+                }
+                .tag(3)
+  
+            ProgressView(habitViewModel: viewModel)
+                .tabItem {
+                    Label("Progress", systemImage: "calendar")
+                }
+                .tag(1)
 
                     ProfileView(viewModel: viewModel)
                         .tabItem {
