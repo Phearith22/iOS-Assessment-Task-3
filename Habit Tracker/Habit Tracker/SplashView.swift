@@ -33,7 +33,11 @@ struct SplashView: View {
                         .offset(x: 10)
                 }
                 .frame(maxWidth: .infinity)
-
+                
+                Text("QuokkaQuest")
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundColor(Theme.textPrimary)
+                
                 Image("logo")
                     .resizable()
                     .scaledToFit()
