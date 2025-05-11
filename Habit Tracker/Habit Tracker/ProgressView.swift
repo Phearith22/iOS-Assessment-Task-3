@@ -44,6 +44,7 @@ struct ProgressView: View {
             .background(Theme.background)
             .onAppear {
                 viewModel.generateDaysForSelectedMonth()
+                viewModel.calculateStats()
             }
             .sheet(item: $selectedDate, onDismiss: {
                 viewModel.generateDaysForSelectedMonth()
@@ -149,7 +150,7 @@ struct ProgressView: View {
                         .font(.subheadline)
                         .foregroundColor(.gray)
                 } else {
-                    Text("Tap on any day to view and mark your habits as completed.")
+                    Text("Tap on any day to view completed and pending habits.")
                         .font(.subheadline)
                         .foregroundColor(.gray)
                 }

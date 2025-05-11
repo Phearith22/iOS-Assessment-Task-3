@@ -10,7 +10,6 @@ import Combine
 class ProgressViewModel : ObservableObject{
     @Published var selectedMonth: Int
     @Published var selectedYear: Int
-    @Published var currentDate = Date()
     @Published var daysInMonth: [Date] = []
     @Published var completedDays: Set<String> = [] // tracks completed dates
     
@@ -176,7 +175,9 @@ class ProgressViewModel : ObservableObject{
     func toggleHabitCompletion(_ habit: Habit, date: Date) {
         habitViewModel.toggleHabitCompletion(habit, date: date)
         calculateStats()
-        objectWillChange.send()
+        DispatchQueue.main.async {
+                self.objectWillChange.send()
+            }
     }
     
     func toggleCompletionForDate(_ date: Date) {
@@ -211,6 +212,7 @@ class ProgressViewModel : ObservableObject{
 
     func calculateStats() {
         //Calculate all stats
+        autoUpdateCompletedDays()
         calculateStreaks()
         calculateCompletionRate()
         calculateMonthlyPoints()
@@ -221,29 +223,54 @@ class ProgressViewModel : ObservableObject{
         let today = calendar.startOfDay(for: Date())
         var currentDate = today
         var currentCount = 0
-        var maxCount = longestStreak
-        
-        // Calculate streak by checking consecutive days backward from today
-        while completedDays.contains(dateString(from: currentDate)){
-            currentCount += 1
-            maxCount = max(maxCount, currentCount)
-            
-            //Move to previous day
-            if let previousDay = calendar.date(byAdding: .day, value: -1, to: currentDate){
-                currentDate = previousDay
-            }else{
-                break
-            }
-        }
-        //store results
-        currentStreak = currentCount
-        maxCount = max(maxCount, currentCount)
-        longestStreak = maxCount
-        // Update longest stream in userdeafults if needed
-        if longestStreak > UserDefaults.standard.integer(forKey: "LongestStreak") {
-            UserDefaults.standard.set(longestStreak, forKey: "LongestStreak")
-        }
-    }
+        var maxCount = 0
+
+           while true {
+               let dateStr = dateString(from: currentDate)
+               let habits = habitsForDate(currentDate)
+
+               let allCompleted = !habits.isEmpty && habits.allSatisfy { habit in
+                   habitViewModel.habitCompletions[dateStr]?.contains(habit.id) == true
+               }
+
+               if allCompleted {
+                   currentCount += 1
+                   maxCount = max(maxCount, currentCount)
+                   if let previousDay = calendar.date(byAdding: .day, value: -1, to: currentDate) {
+                       currentDate = previousDay
+                   } else {
+                       break
+                   }
+               } else {
+                   break
+               }
+           }
+
+           currentStreak = currentCount
+           longestStreak = max(longestStreak, currentStreak)
+
+           let sortedDates = completedDays.sorted(by: >)
+           var longest = 0
+           var tempStreak = 0
+           var streakDate = today
+
+           for dateStr in sortedDates {
+               guard let date = dateFromString(dateStr) else { continue }
+               if Calendar.current.isDate(date, inSameDayAs: streakDate) {
+                   tempStreak += 1
+                   longest = max(longest, tempStreak)
+                   if let previous = calendar.date(byAdding: .day, value: -1, to: streakDate) {
+                       streakDate = previous
+                   }
+               } else {
+                   tempStreak = 0
+                   streakDate = date
+               }
+           }
+
+           longestStreak = longest
+           UserDefaults.standard.set(longestStreak, forKey: "LongestStreak")
+       }
     
     private func calculateCompletionRate() {
         // calculate completion for the current month
@@ -305,5 +332,28 @@ class ProgressViewModel : ObservableObject{
         formatter.dateFormat = "EEEE" // Full day name
         return formatter.string(from: date)
     }
+    private func autoUpdateCompletedDays() {
+        let calendar = Calendar.current
+        let validDates = daysInMonth.filter {
+            calendar.component(.month, from: $0) == selectedMonth &&
+            calendar.component(.year, from: $0) == selectedYear &&
+            $0 <= Date()
+        }
+
+        let updated = validDates.compactMap { date -> String? in
+            let status = completionStatusForDate(date)
+            return status >= 0.99 ? dateString(from: date) : nil
+        }
+
+        completedDays = Set(updated)
+        saveCompletedDays()
+    }
+    private func dateFromString(_ str: String) -> Date? {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.date(from: str)
+    }
+
+
 
 }

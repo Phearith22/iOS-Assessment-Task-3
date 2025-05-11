@@ -288,12 +288,22 @@ struct DashboardViewModel: View {
         }
 
     func updateCompletion(for habit: Habit) {
-        if habitCompletions[habit.id, default: 0] >= habit.timesPerDay {
+        let completedCount = habitCompletions[habit.id, default: 0]
+        let today = Date()
+        let isAlreadyMarked = viewModel.isHabitCompletedOnDate(habit, date: today)
+
+        if completedCount >= habit.timesPerDay {
             if !completedHabitsToday.contains(habit.id) {
                 completedHabitsToday.append(habit.id)
             }
+            if !isAlreadyMarked {
+                viewModel.toggleHabitCompletion(habit, date: today)
+            }
         } else {
             completedHabitsToday.removeAll { $0 == habit.id }
+            if isAlreadyMarked {
+                viewModel.toggleHabitCompletion(habit, date: today)
+            }
         }
         earnedPoints = calculateEarnedPoints()
         saveData()
