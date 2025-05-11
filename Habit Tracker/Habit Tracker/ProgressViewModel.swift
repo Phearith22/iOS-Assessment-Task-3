@@ -170,39 +170,12 @@ class ProgressViewModel : ObservableObject{
     
     // Check if a specific habit is completed on a date
     func isHabitCompletedOnDate(_ habit: Habit, date: Date) -> Bool {
-        let dateStr = dateString(from: date)
-        if let habitsCompleted = habitCompletions[dateStr] {
-            return habitsCompleted.contains(habit.id)
-        }
-        return false
-    }
+    habitViewModel.isHabitCompletedOnDate(habit, date: date)
+}
     
     // Toggle a habit's completion for a specific date
     func toggleHabitCompletion(_ habit: Habit, date: Date) {
-        let dateStr = dateString(from: date)
-        
-        // Initialize if needed
-        if habitCompletions[dateStr] == nil {
-            habitCompletions[dateStr] = []
-        }
-        
-        if let index = habitCompletions[dateStr]?.firstIndex(of: habit.id) {
-            // Remove habit from completed list
-            habitCompletions[dateStr]?.remove(habit.id)
-            
-            // If no habits are completed for this date, remove from completedDays
-            if habitCompletions[dateStr]?.isEmpty ?? true {
-                completedDays.remove(dateStr)
-            }
-        } else {
-            // Add habit to completed list
-            habitCompletions[dateStr]?.insert(habit.id)
-            completedDays.insert(dateStr)
-        }
-        
-        saveHabitCompletions()
-        saveCompletedDays()
-        calculateStats()
+        habitViewModel.toggleHabitCompletion(habit, date: date)
     }
     
     func toggleCompletionForDate(_ date: Date) {
@@ -345,4 +318,5 @@ class ProgressViewModel : ObservableObject{
         formatter.dateFormat = "EEEE" // Full day name
         return formatter.string(from: date)
     }
+
 }

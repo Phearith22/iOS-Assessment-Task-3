@@ -220,13 +220,24 @@ struct AddHabitView: View {
                         isDisabled: habitName.isEmpty || selectedDays.isEmpty
                     ) {
                         let finalDays = selectedDays.map { cleanDay($0) }
+                        let today = Date()
+                        let todayName = getDayName(from: today) // e.g., "Sunday"
+
+                        let habitStartDate: Date
+                        if finalDays.contains(todayName) {
+                            habitStartDate = today
+                        } else {
+                            habitStartDate = findNextValidDate(from: today, matching: finalDays)
+                        }
+
                         let newHabit = Habit(
                             name: habitName,
                             frequency: finalDays,
                             difficulty: difficulty,
-                            startDate: startDate,
+                            startDate: habitStartDate,
                             timesPerDay: timesPerDay
                         )
+
                         viewModel.addHabit(newHabit)
                         habitName = ""
                         selectedDays = []
@@ -272,5 +283,24 @@ struct AddHabitView: View {
         default: return ""
         }
     }
+    func getDayName(from date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE"
+        return formatter.string(from: date)
+    }
+
+    func findNextValidDate(from start: Date, matching days: [String]) -> Date {
+        let calendar = Calendar.current
+        for offset in 1...7 {
+            if let nextDate = calendar.date(byAdding: .day, value: offset, to: start) {
+                let nextDayName = getDayName(from: nextDate)
+                if days.contains(nextDayName) {
+                    return nextDate
+                }
+            }
+        }
+        return start
+    }
+
 }
 

@@ -87,8 +87,8 @@ struct DashboardViewModel: View {
                     }
                     .listRowSeparator(.hidden)
                        .listRowBackground(Color.clear)
-
-                       ForEach(viewModel.habits) { habit in
+                        
+                        ForEach(todaysHabits()) { habit in
                            habitCard(for: habit)
                                .listRowSeparator(.hidden)
                                .listRowBackground(Color.clear)
@@ -178,13 +178,17 @@ struct DashboardViewModel: View {
                     .foregroundColor(.gray)
                 
                 Button(action: {
-                    if completedHabitsToday.contains(habit.id) {
+                    let today = Date()
+                    if viewModel.isHabitCompletedOnDate(habit, date: today) {
+                        viewModel.toggleHabitCompletion(habit, date: today)
                         completedHabitsToday.removeAll { $0 == habit.id }
                     } else {
+                        viewModel.toggleHabitCompletion(habit, date: today)
                         completedHabitsToday.append(habit.id)
                     }
                     earnedPoints = calculateEarnedPoints()
                     saveData()
+
                 }) {
                     HStack {
                         Image(systemName: completedHabitsToday.contains(habit.id) ? "checkmark.square" : "square")
@@ -258,25 +262,27 @@ struct DashboardViewModel: View {
         }
 
     var progress: Double {
-        let total = Double(viewModel.habits.count)
+        let habitsToday = todaysHabits()
+        let total = Double(habitsToday.count)
         guard total > 0 else { return 0 }
 
         let completed = Double(
-            viewModel.habits.filter { completedHabitsToday.contains($0.id) }.count
+            habitsToday.filter { completedHabitsToday.contains($0.id) }.count
         )
 
         return completed / total
     }
 
 
+
        
     
     var totalPoints: Int {
-        viewModel.habits.reduce(0) { $0 + points(for: $1.difficulty) }
+        todaysHabits().reduce(0) { $0 + points(for: $1.difficulty) }
     }
     // Calculate the earned points dynamically
         func calculateEarnedPoints() -> Int {
-            return viewModel.habits
+            return todaysHabits()
                 .filter { completedHabitsToday.contains($0.id) }
                 .reduce(0) { $0 + points(for: $1.difficulty) }
         }
@@ -300,6 +306,20 @@ struct DashboardViewModel: View {
             return "normalquokka"
         } else {
             return "Happyquokka"
+        }
+    }
+
+    func getDayName(from date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE"
+        return formatter.string(from: date)
+    }
+
+    func todaysHabits() -> [Habit] {
+        let today = Date()
+        let todayName = getDayName(from: today)
+        return viewModel.habits.filter {
+            $0.startDate <= today && $0.frequency.contains(todayName)
         }
     }
 
