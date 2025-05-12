@@ -5,7 +5,7 @@
 //  Created by Paridhi Agarwal on 4/5/2025.
 //
 import SwiftUI
-
+ 
 struct AddHabitView: View {
     @State private var habitName: String = ""
     @State private var selectedDays: [String] = []
@@ -33,7 +33,7 @@ struct AddHabitView: View {
     var isWeekendsSelected: Bool {
         Set(selectedDays) == Set(weekends)
     }
-
+ 
     var body: some View {
         VStack(alignment: .leading, spacing: 20)  {
             // Header
@@ -73,7 +73,7 @@ struct AddHabitView: View {
                                 .font(.headline)
                                 .foregroundColor(Theme.textPrimary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-
+ 
                             HStack(spacing: 24) {
                                 Button(action: {
                                     if timesPerDay > 1 {
@@ -87,12 +87,12 @@ struct AddHabitView: View {
                                         .cornerRadius(10)
                                         .foregroundColor(Theme.textPrimary)
                                 }
-
+ 
                                 Text("\(timesPerDay)")
                                     .font(.title3)
                                     .fontWeight(.semibold)
                                     .foregroundColor(Theme.textPrimary)
-
+ 
                                 Button(action: {
                                     timesPerDay += 1
                                 }) {
@@ -143,11 +143,11 @@ struct AddHabitView: View {
                                 }
                                 
                             }
-
+ 
                             .padding(.top, 4)
                         }
                     }
-
+ 
                     // Difficulty
                     CardView {
                         VStack(alignment: .leading, spacing: 8) {
@@ -181,8 +181,8 @@ struct AddHabitView: View {
                             }
                         }
                     }
-
-
+ 
+ 
                     // Notification
                     CardView {
                         VStack(alignment: .leading, spacing: 8) {
@@ -197,7 +197,7 @@ struct AddHabitView: View {
                             }
                         }
                     }
-
+ 
                     // Start Date
                     CardView {
                         HStack {
@@ -222,14 +222,14 @@ struct AddHabitView: View {
                         let finalDays = selectedDays.map { cleanDay($0) }
                         let today = Date()
                         let todayName = getDayName(from: today) // e.g., "Sunday"
-
+ 
                         let habitStartDate: Date
                         if finalDays.contains(todayName) {
                             habitStartDate = today
                         } else {
                             habitStartDate = findNextValidDate(from: today, matching: finalDays)
                         }
-
+ 
                         let newHabit = Habit(
                             name: habitName,
                             frequency: finalDays,
@@ -237,12 +237,34 @@ struct AddHabitView: View {
                             startDate: habitStartDate,
                             timesPerDay: timesPerDay
                         )
-
+ 
                         viewModel.addHabit(newHabit)
+                        if notificationEnabled {
+                            let weekdays: [Int] = finalDays.compactMap { day in
+                                switch day {
+                                case "Sunday": return 1
+                                case "Monday": return 2
+                                case "Tuesday": return 3
+                                case "Wednesday": return 4
+                                case "Thursday": return 5
+                                case "Friday": return 6
+                                case "Saturday": return 7
+                                default: return nil
+                                }
+                            }
+ 
+                            NotificationManager.shared.schedule(
+                                habitID: newHabit.id,
+                                title: newHabit.name,
+                                time: notificationTime,
+                                weekdays: weekdays
+                            )
+                        }
+ 
                         habitName = ""
                         selectedDays = []
                         difficulty = "Medium"
-                        selectedTab = 0 
+                        selectedTab = 0
                         dismiss()
                     }
                 }
@@ -254,7 +276,7 @@ struct AddHabitView: View {
         .ignoresSafeArea()
         .frame(maxWidth: .infinity)
     }
-
+ 
     func toggleDay(_ day: String) {
         if selectedDays.contains(day) {
             selectedDays.removeAll { $0 == day }
@@ -262,7 +284,7 @@ struct AddHabitView: View {
             selectedDays.append(day)
         }
     }
-
+ 
     func cleanDay(_ raw: String) -> String {
         switch raw {
             case "M0": return "Monday"
@@ -275,7 +297,7 @@ struct AddHabitView: View {
             default: return raw
         }
     }
-
+ 
     private func points(for difficulty: String) -> String {
         switch difficulty {
         case "Easy": return "50 points"
@@ -289,7 +311,7 @@ struct AddHabitView: View {
         formatter.dateFormat = "EEEE"
         return formatter.string(from: date)
     }
-
+ 
     func findNextValidDate(from start: Date, matching days: [String]) -> Date {
         let calendar = Calendar.current
         for offset in 1...7 {
@@ -302,6 +324,6 @@ struct AddHabitView: View {
         }
         return start
     }
-
+ 
 }
-
+ 

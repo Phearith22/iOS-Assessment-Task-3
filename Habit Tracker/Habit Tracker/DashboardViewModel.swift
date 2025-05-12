@@ -4,9 +4,9 @@
 //
 //  Created by Pichsophearith lay on 9/5/2025.
 //
-
+ 
 import SwiftUI
-
+ 
 struct DashboardViewModel: View {
         @ObservedObject var viewModel: HabitViewModel
         @State private var completedHabitsToday: [UUID] = []
@@ -21,7 +21,7 @@ struct DashboardViewModel: View {
             UserDefaults.standard.set(completedHabitsData, forKey: "completedHabitsToday")
             UserDefaults.standard.set(earnedPoints, forKey: "earnedPoints")
         }
-
+ 
         // Load the saved habits and points from UserDefaults
         private func loadData() {
             if let savedCompletedHabits = UserDefaults.standard.array(forKey: "completedHabitsToday") as? [String] {
@@ -29,12 +29,13 @@ struct DashboardViewModel: View {
             }
             earnedPoints = UserDefaults.standard.integer(forKey: "earnedPoints")
         }
-
-
+ 
+ 
     var body: some View {
-            ZStack {
-                Theme.background
-                    .edgesIgnoringSafeArea(.all)
+        ZStack {
+            Theme.background
+                .edgesIgnoringSafeArea(.all)
+            VStack {
                 List {
                     VStack(spacing: 20) {
                         
@@ -53,7 +54,7 @@ struct DashboardViewModel: View {
                             .frame(width: 150, height: 150)
                             .offset(x: 7)
                             .shadow(radius: 4)
-
+                        
                         
                         if !viewModel.habits.isEmpty {
                             VStack(alignment: .leading, spacing: 10) {
@@ -62,17 +63,17 @@ struct DashboardViewModel: View {
                                     .font(.headline)
                                     .foregroundColor(Theme.textPrimary)
                                 HStack {
-                                // Progress bar
-                                SwiftUI.ProgressView(value: progress)
-                                    .accentColor(Theme.textPrimary)
-                                    .frame(height: 8)
+                                    // Progress bar
+                                    SwiftUI.ProgressView(value: progress)
+                                        .accentColor(Theme.textPrimary)
+                                        .frame(height: 8)
+                                    
+                                    Text("\(earnedPoints)/\(totalPoints)")
+                                        .font(.subheadline)
+                                        .foregroundColor(.gray)
+                                }
                                 
-                                Text("\(earnedPoints)/\(totalPoints)")
-                                                .font(.subheadline)
-                                                .foregroundColor(.gray)
-                                        }
                                 
-                               
                             }
                             .padding(.horizontal)
                         }
@@ -86,17 +87,24 @@ struct DashboardViewModel: View {
                         
                     }
                     .listRowSeparator(.hidden)
-                       .listRowBackground(Color.clear)
-                        
-                        ForEach(todaysHabits()) { habit in
-                           habitCard(for: habit)
-                               .listRowSeparator(.hidden)
-                               .listRowBackground(Color.clear)
-                       }
-                   }
-                   .listStyle(.plain)
-                   .background(Theme.background)
+                    .listRowBackground(Color.clear)
+                    
+                    ForEach(todaysHabits()) { habit in
+                        habitCard(for: habit)
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                    }
+                }
+                .listStyle(.plain)
+                .background(Theme.background)
                 
+                QuoteView()
+                    .frame(maxWidth: .infinity)
+                    .multilineTextAlignment(.center)
+                    .padding(.vertical, 16)
+                    .listRowBackground(Color.clear)
+                    .listRowSeparator(.hidden)
+            }
                 .alert("Are you sure you want to delete this habit?", isPresented: $showDeleteAlert, presenting: habitToDelete) { habit in
                     Button("Delete", role: .destructive) {
                         viewModel.deleteHabit(habit)
@@ -108,7 +116,7 @@ struct DashboardViewModel: View {
                 } message: { _ in
                     Text("This action cannot be undone.")
                 }
-
+ 
         }
         .onAppear {
             loadData()
@@ -122,12 +130,12 @@ struct DashboardViewModel: View {
                 let weekdaySymbol = weekdaySymbols[index]
                 let dayNumber = Calendar.current.component(.day, from: date)
                 let isToday = Calendar.current.isDateInToday(date)
-
+ 
                 VStack {
                     Text(weekdaySymbol)
                         .font(.caption)
                         .foregroundColor(.gray)
-
+ 
                     Text("\(dayNumber)")
                         .fontWeight(isToday ? .bold : .regular)
                         .foregroundColor(isToday ? .white : Theme.textPrimary)
@@ -188,7 +196,7 @@ struct DashboardViewModel: View {
                     }
                     earnedPoints = calculateEarnedPoints()
                     saveData()
-
+ 
                 }) {
                     HStack {
                         Image(systemName: completedHabitsToday.contains(habit.id) ? "checkmark.square" : "square")
@@ -245,7 +253,7 @@ struct DashboardViewModel: View {
     private var startOfWeek: Date {
             Calendar.current.date(from: Calendar.current.dateComponents([.yearForWeekOfYear, .weekOfYear], from: Date()))!
         }
-
+ 
         private var weekdaySymbols: [String] {
             let symbols = Calendar.current.shortWeekdaySymbols
             let firstWeekday = Calendar.current.firstWeekday - 1
@@ -260,21 +268,21 @@ struct DashboardViewModel: View {
             default: return 0
             }
         }
-
+ 
     var progress: Double {
         let habitsToday = todaysHabits()
         let total = Double(habitsToday.count)
         guard total > 0 else { return 0 }
-
+ 
         let completed = Double(
             habitsToday.filter { completedHabitsToday.contains($0.id) }.count
         )
-
+ 
         return completed / total
     }
-
-
-
+ 
+ 
+ 
        
     
     var totalPoints: Int {
@@ -286,12 +294,12 @@ struct DashboardViewModel: View {
                 .filter { completedHabitsToday.contains($0.id) }
                 .reduce(0) { $0 + points(for: $1.difficulty) }
         }
-
+ 
     func updateCompletion(for habit: Habit) {
         let completedCount = habitCompletions[habit.id, default: 0]
         let today = Date()
         let isAlreadyMarked = viewModel.isHabitCompletedOnDate(habit, date: today)
-
+ 
         if completedCount >= habit.timesPerDay {
             if !completedHabitsToday.contains(habit.id) {
                 completedHabitsToday.append(habit.id)
@@ -318,13 +326,13 @@ struct DashboardViewModel: View {
             return "Happyquokka"
         }
     }
-
+ 
     func getDayName(from date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE"
         return formatter.string(from: date)
     }
-
+ 
     func todaysHabits() -> [Habit] {
         let today = Date()
         let todayName = getDayName(from: today)
@@ -332,8 +340,7 @@ struct DashboardViewModel: View {
             $0.startDate <= today && $0.frequency.contains(todayName)
         }
     }
-
-
+ 
+ 
 }
-
-
+ 
